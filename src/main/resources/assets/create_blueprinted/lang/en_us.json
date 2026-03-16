@@ -1,0 +1,17 @@
+{
+  "create_blueprinted.gui.schematic_table.render_button.title": "Render Schematic",
+  "create_blueprinted.gui.schematic_table.render_button.res": "Res: ",
+  "create_blueprinted.gui.schematic_table.render_button.res.hint": " (Hold [%s] for 1024)",
+  "create_blueprinted.gui.schematic_table.render_button.dir": "Dir: ",
+  "create_blueprinted.gui.schematic_table.render_button.dir.left": "Left",
+  "create_blueprinted.gui.schematic_table.render_button.dir.right": "Right",
+  "create_blueprinted.gui.schematic_table.render_button.dir.hint": " (Hold [%s] for Left)",
+  "create_blueprinted.gui.schematic_table.render_button.save_hint": "Saves to the 'schematics' folder.",
+  "create_blueprinted.gui.schematic_table.render_button.chat_hint": "The rendered image will be sent in chat.",
+  "create_blueprinted.command.renderschem.not_found": "Error: Schematic '%s.nbt' not found.",
+  "create_blueprinted.command.renderschem.starting": "Starting background render for '%s'...",
+  "create_blueprinted.command.renderschem.success": "Successfully rendered schematic to ",
+  "create_blueprinted.command.renderschem.click_to_open": "Click to open image",
+  "create_blueprinted.command.renderschem.timeout": "Error: Schematic rendering timed out after 1 minute.",
+  "create_blueprinted.command.renderschem.error": "Error: %s"
+}
