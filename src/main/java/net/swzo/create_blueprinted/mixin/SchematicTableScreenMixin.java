@@ -46,6 +46,19 @@ public abstract class SchematicTableScreenMixin extends Screen {
         brassworks$ctrlWasDownOnInit = Screen.hasControlDown();
     }
 
+    @Unique
+    private String brassworks$selectedFilename() {
+        if (schematicsArea == null) return null;
+        int index = schematicsArea.getState();
+        List<Component> availableSchematics = CreateClient.SCHEMATIC_SENDER.getAvailableSchematics();
+        if (index < 0 || index >= availableSchematics.size()) return null;
+        String filename = availableSchematics.get(index).getString();
+        if (filename.endsWith(".nbt")) {
+            filename = filename.substring(0, filename.length() - 4);
+        }
+        return filename;
+    }
+
     @Inject(method = "init", at = @At("TAIL"))
     private void onInitTail(CallbackInfo ci) {
         int renderButtonX = refreshButton.getX();
@@ -65,7 +78,7 @@ public abstract class SchematicTableScreenMixin extends Screen {
                 this.toolTip.add(Component.translatable("create_blueprinted.gui.schematic_table.render_button.title").withColor(UiHelpers.DARK_BLUE_TEXT_COLOR));
 
                 var resComponent = Component.translatable("create_blueprinted.gui.schematic_table.render_button.res").withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(shiftActive ? "1024" : "256").withColor(UiHelpers.LIGHT_BLUE_TEXT_COLOR));
+                        .append(Component.literal(shiftActive ? "2048" : "1024").withColor(UiHelpers.LIGHT_BLUE_TEXT_COLOR));
 
                 if (!shiftActive) {
                     resComponent.append(Component.translatable("create_blueprinted.gui.schematic_table.render_button.res.hint",
@@ -94,26 +107,18 @@ public abstract class SchematicTableScreenMixin extends Screen {
         };
 
         renderButton.withCallback(() -> {
-            if (schematicsArea == null) return;
-
-            int index = schematicsArea.getState();
-            List<Component> availableSchematics = CreateClient.SCHEMATIC_SENDER.getAvailableSchematics();
-            if (index < 0 || index >= availableSchematics.size()) return;
-
-            String filename = availableSchematics.get(index).getString();
-            if (filename.endsWith(".nbt")) {
-                filename = filename.substring(0, filename.length() - 4);
-            }
+            String filename = brassworks$selectedFilename();
+            if (filename == null) return;
 
             boolean shiftActive = Screen.hasShiftDown() && !brassworks$shiftWasDownOnInit;
             boolean ctrlActive = Screen.hasControlDown() && !brassworks$ctrlWasDownOnInit;
 
-            int resolution = shiftActive ? 1024 : 256;
+            int imageWidth = shiftActive ? 2048 : 1024;
             String orientation = ctrlActive ? "left" : "right";
 
             if (Minecraft.getInstance().player != null) {
                 CommandSourceStack source = Minecraft.getInstance().player.createCommandSourceStack();
-                CreateSchematicExporter.export(source, filename, orientation, resolution);
+                CreateSchematicExporter.export(source, filename, orientation, imageWidth);
                 Minecraft.getInstance().setScreen(null);
             }
         });
