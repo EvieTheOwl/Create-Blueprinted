@@ -36,3 +36,6 @@ Want a fully custom camera angle? Use:
 ```bash
 /renderschem <filename> angle <yaw> <pitch> [roll] [width] [antialiasing]
 ```
+
+#### License
+This project is licensed under MIT
