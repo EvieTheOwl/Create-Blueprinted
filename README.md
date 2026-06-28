@@ -37,5 +37,5 @@ Want a fully custom camera angle? Use:
 /renderschem <filename> angle <yaw> <pitch> [roll] [width] [antialiasing]
 ```
 
-#### License
+### License
 This project is licensed under MIT
