@@ -41,7 +41,7 @@ Want a fully custom camera angle? Use:
 To add Blueprinted as a dependency add the following to your `build.gradle` file:
 ```gradle
 repositories {
-    maven { url = "https://api.modrinth.com/maven" } // Create Schematic Preview
+    maven { url = "https://api.modrinth.com/maven" }
 }
 
 dependencies {
