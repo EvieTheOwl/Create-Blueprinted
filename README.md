@@ -60,7 +60,7 @@ A couple events are provided which you can utilize in your mod:
 
 ```java
 @SubscribeEvent
-public static void beforeRenderSchematicImage(RenderSchematicImageEvent.Pre e) {
+public static void beforeRenderImage(RenderSchematicImageEvent.Pre e) {
     // Get the file name and level content (read only)
     String fileName = e.getFileName();
     SchematicLevel level = e.getImageContent();
@@ -72,7 +72,7 @@ public static void beforeRenderSchematicImage(RenderSchematicImageEvent.Pre e) {
 }
 
 @SubscribeEvent
-public static void onExportSchematicImage(RenderSchematicImageEvent.Post e) {
+public static void onExportOrShareImage(RenderSchematicImageEvent.Post e) {
     // The player is choosing to share a file instead of exporting it to a file
     boolean isSharing = e.getAction() == RenderSchematicImageEvent.Action.SHARE;
     // You can now implement your own custom image sharing logic
