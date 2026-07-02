@@ -7,23 +7,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 public class FileUtils {
 
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("png", "jpg", "jpeg", "gif", "bmp", "webp" );
-
-    // Caller must handle wrapped exception appropriately using exceptionally() or handle()
-    public static CompletableFuture<Path> saveImageAsync(File directory, String fileName, String extension, byte[] imageByteArray) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return saveImage(directory, fileName, extension, imageByteArray);
-            } catch (IOException | IllegalArgumentException e) {
-                throw new CompletionException(e);
-            }
-        });
-    }
 
     public static Path saveImage(File directory, String fileName, String extension, byte[] imageByteArray) throws IOException, IllegalArgumentException {
         String fileNameAndExt = fileName + "." + extension;

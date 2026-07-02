@@ -87,12 +87,13 @@ public class SchematicImageHandler {
     public void export() {
         Minecraft client = Minecraft.getInstance();
         renderAndDownsample(Action.EXPORT)
-                .thenCompose(imageByteArray -> processExport(imageByteArray, client))
+                .thenApplyAsync(imageByteArray -> processExport(imageByteArray, client), PIPELINE)
                 .handle((path, e) -> onExportFinish(path, e, client));
     }
 
     public void share() {
         renderAndDownsample(Action.SHARE);
+
     }
 
     public static Stream<String> getAllSchematicNames() {
@@ -142,14 +143,18 @@ public class SchematicImageHandler {
         return CompletableFuture.completedFuture(null);
     }
 
-    private CompletableFuture<Path> processExport(byte[] imageByteArray, Minecraft client) {
+    private Path processExport(byte[] imageByteArray, Minecraft client) {
         DEBUG_TIMER.markInstant("Before export");
 
         if (imageByteArray == null) return null;
         String gameDirectory = client.gameDirectory.getPath();
         File schematicDirectory = new File(gameDirectory, "schematics");
 
-        return FileUtils.saveImageAsync(schematicDirectory, fileName, "png", imageByteArray);
+        try {
+            return FileUtils.saveImage(schematicDirectory, fileName, "png", imageByteArray);
+        } catch (IOException e) {
+            throw new CompletionException(e);
+        }
     }
 
     private byte[] convertToByteArray(NativeImage image) {
