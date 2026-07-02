@@ -37,5 +37,48 @@ Want a fully custom camera angle? Use:
 /renderschem <filename> angle <yaw> <pitch> [roll] [width] [antialiasing]
 ```
 
-#### License
+## Developers
+To add Blueprinted as a dependency add the following to your `build.gradle` file:
+```gradle
+repositories {
+    maven { url = "https://api.modrinth.com/maven" } // Create Schematic Preview
+}
+
+dependencies {
+    compileOnly "maven.modrinth:create-blueprinted:${blueprinted_version}+mc${minecraft_version}-neoforge"
+    localRuntime "maven.modrinth:create-blueprinted:${blueprinted_version}+mc${minecraft_version}-neoforge"
+}
+```
+Make sure to define `blueprinted_version` and `minecraft_version` within the `gradle.properties` file.
+
+### Events
+A couple events are provided which you can utilize in your mod:
+- `RenderSchematicEvent.Pre` - Fired before a schematic is rendered. Includes the `SchematicLevel` which represents the content that is about to be rendered. 
+- `RenderSchematicEvent.Post` - Fired after a schematic is rendered and before it is about to be exported or shared. includes a byte array of the rendered PNG image.
+
+### Examples
+
+```java
+@SubscribeEvent
+public static void beforeRenderSchematicImage(RenderSchematicImageEvent.Pre e) {
+    // Get the file name and level content (read only)
+    String fileName = e.getFileName();
+    SchematicLevel level = e.getImageContent();
+
+    // Set the images width to 256 pixels and apply a purple background
+    e.modifyRenderSettings().imageWidth(256).backgroundColor(Color.PURPLE);
+    // Cancel the image render event. Useful if you want to implement your own rendering logic.
+    e.setCanceled(true);
+}
+
+@SubscribeEvent
+public static void onExportSchematicImage(RenderSchematicImageEvent.Post e) {
+    // The player is choosing to share a file instead of exporting it to a file
+    boolean isSharing = e.getAction() == RenderSchematicImageEvent.Action.SHARE;
+    // You can now implement your own custom image sharing logic
+    if (isSharing) shareImageToBob(e.getFileName(), e.getImageContent());
+}
+```
+
+## License
 This project is licensed under MIT
