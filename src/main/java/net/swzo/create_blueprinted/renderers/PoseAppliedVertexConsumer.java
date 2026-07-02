@@ -1,6 +1,7 @@
-package net.swzo.create_blueprinted.render;
+package net.swzo.create_blueprinted.renderers;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -23,39 +24,39 @@ final class PoseAppliedVertexConsumer implements VertexConsumer {
     }
 
     @Override
-    public VertexConsumer addVertex(float x, float y, float z) {
+    public @NotNull VertexConsumer addVertex(float x, float y, float z) {
         pose.transformPosition(x + offX, y + offY, z + offZ, scratch);
         delegate.addVertex(scratch.x(), scratch.y(), scratch.z());
         return this;
     }
 
     @Override
-    public VertexConsumer setNormal(float x, float y, float z) {
+    public @NotNull VertexConsumer setNormal(float x, float y, float z) {
         normal.transform(x, y, z, scratch);
         delegate.setNormal(scratch.x(), scratch.y(), scratch.z());
         return this;
     }
 
     @Override
-    public VertexConsumer setColor(int red, int green, int blue, int alpha) {
+    public @NotNull VertexConsumer setColor(int red, int green, int blue, int alpha) {
         delegate.setColor(red, green, blue, alpha);
         return this;
     }
 
     @Override
-    public VertexConsumer setUv(float u, float v) {
+    public @NotNull VertexConsumer setUv(float u, float v) {
         delegate.setUv(u, v);
         return this;
     }
 
     @Override
-    public VertexConsumer setUv1(int u, int v) {
+    public @NotNull VertexConsumer setUv1(int u, int v) {
         delegate.setUv1(u, v);
         return this;
     }
 
     @Override
-    public VertexConsumer setUv2(int u, int v) {
+    public @NotNull VertexConsumer setUv2(int u, int v) {
         delegate.setUv2(u, v);
         return this;
     }

@@ -13,9 +13,16 @@
   "create_blueprinted.command.renderschem.starting": "Starting background render for '%s'...",
   "create_blueprinted.command.renderschem.success": "Successfully rendered schematic to ",
   "create_blueprinted.command.renderschem.click_to_open": "Click to open image",
-  "create_blueprinted.command.renderschem.timeout": "Error: Schematic rendering timed out after 2 minutes.",
+  "create_blueprinted.command.renderschem.timeout": "Error: Schematic rendering timed out after 1 minute.",
   "create_blueprinted.command.renderschem.error": "Error: %s",
   "create_blueprinted.render.progress.rendering": "Rendering %s",
   "create_blueprinted.render.progress.done": "Rendered %s",
-  "create_blueprinted.render.progress.failed": "Render failed: %s"
+  "create_blueprinted.render.progress.failed": "Render failed: %s",
+
+  "create_blueprinted.error.schematic_render": "Failed to render schematic.",
+  "create_blueprinted.error.schematic_render.timed_out": "Took longer than %s seconds to process.",
+  "create_blueprinted.error.schematic_render.render_failed": "Check the log file for more info.",
+  "create_blueprinted.error.schematic_render.empty_image_bake": "Invalid or empty image source.",
+  "create_blueprinted.error.schematic_render.convert_and_validate_failed": "Unable to convert and validate image.",
+  "create_blueprinted.error.schematic_export": "Failed to save schematic image to the schematics folder"
 }
