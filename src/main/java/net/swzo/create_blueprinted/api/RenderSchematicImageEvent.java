@@ -3,6 +3,7 @@ package net.swzo.create_blueprinted.api;
 import net.createmod.catnip.levelWrappers.SchematicLevel;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
+import net.swzo.create_blueprinted.render.SchematicRenderSettings;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class RenderSchematicImageEvent<T> extends Event implements ICancellableEvent {

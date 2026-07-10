@@ -1,28 +1,43 @@
 {
-  "create_blueprinted.gui.schematic_table.render_button.title": "Render Schematic",
   "create_blueprinted.gui.schematic_table.render_button.res": "Width: ",
   "create_blueprinted.gui.schematic_table.render_button.res.hint": " (Hold [%s] for 2048)",
   "create_blueprinted.gui.schematic_table.render_button.dir": "Dir: ",
   "create_blueprinted.gui.schematic_table.render_button.dir.left": "Left",
   "create_blueprinted.gui.schematic_table.render_button.dir.right": "Right",
   "create_blueprinted.gui.schematic_table.render_button.dir.hint": " (Hold [%s] for Left)",
-  "create_blueprinted.gui.schematic_table.render_button.save_hint": "Saves to the 'schematics' folder.",
-  "create_blueprinted.gui.schematic_table.render_button.chat_hint": "The rendered image will be sent in chat.",
-  "create_blueprinted.gui.schematic_table.render_button.chat_hint_visibility": "(The message will be visible to you only.)",
+
+  "create_blueprinted.gui.schematic_table.export_button.title": "Export Schematic",
+  "create_blueprinted.gui.schematic_table.export_button.save_hint": "Saves to the 'schematics' folder",
+  "create_blueprinted.gui.schematic_table.export_button.chat_hint": "The rendered image will be sent in chat",
+  "create_blueprinted.gui.schematic_table.export_button.chat_hint_visibility": "(The message will be visible to you only)",
+
+  "create_blueprinted.gui.schematic_table.share_button.title": "Share Schematic",
+  "create_blueprinted.gui.schematic_table.share_button.disabled": "Schematic image sharing disabled",
+  "create_blueprinted.gui.schematic_table.share_button.override_name": "Send image to ",
+  "create_blueprinted.gui.schematic_table.share_button.override_url": "Destination: %s",
+  "create_blueprinted.gui.schematic_table.share_button.override_id": "(Provider: %s)",
+
   "create_blueprinted.command.renderschem.not_found": "Error: Schematic '%s.nbt' not found.",
   "create_blueprinted.command.renderschem.starting": "Starting background render for '%s'...",
   "create_blueprinted.command.renderschem.success": "Successfully rendered schematic to ",
   "create_blueprinted.command.renderschem.click_to_open": "Click to open image",
   "create_blueprinted.command.renderschem.timeout": "Error: Schematic rendering timed out after 1 minute.",
   "create_blueprinted.command.renderschem.error": "Error: %s",
-  "create_blueprinted.render.progress.rendering": "Rendering %s",
-  "create_blueprinted.render.progress.done": "Rendered %s",
-  "create_blueprinted.render.progress.failed": "Render failed: %s",
+
+  "create_blueprinted.message.action_progress.baking": "Baking Schematic %s",
+  "create_blueprinted.message.action_progress.rendering": "Rendering %s",
+  "create_blueprinted.message.action_progress.sharing": "Sending %s",
+  "create_blueprinted.message.action_progress.exporting": "Saving %s",
+  "create_blueprinted.message.action_progress.shared": "Shared %s",
+  "create_blueprinted.message.action_progress.exported": "Exported %s",
+  "create_blueprinted.message.action_progress.export_failed": "Failed to export Schematic: %s",
+  "create_blueprinted.message.action_progress.share_failed": "Failed to share Schematic: %s",
+  "create_blueprinted.message.action_progress.render_failed": "Failed to render Schematic: %s",
 
   "create_blueprinted.error.schematic_render": "Failed to render schematic.",
   "create_blueprinted.error.schematic_render.timed_out": "Took longer than %s seconds to process.",
   "create_blueprinted.error.schematic_render.render_failed": "Check the log file for more info.",
   "create_blueprinted.error.schematic_render.empty_image_bake": "Invalid or empty image source.",
   "create_blueprinted.error.schematic_render.convert_and_validate_failed": "Unable to convert and validate image.",
-  "create_blueprinted.error.schematic_export": "Failed to save schematic image to the schematics folder"
+  "create_blueprinted.error.schematic_export": "Failed to save schematic image to the schematics folder."
 }

@@ -1,7 +1,6 @@
-package net.swzo.create_blueprinted;
+package net.swzo.create_blueprinted.handler;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.simibubi.create.CreateClient;
 import net.createmod.catnip.levelWrappers.SchematicLevel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,29 +10,31 @@ import net.minecraft.network.chat.*;
 import net.minecraft.util.PngInfo;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.neoforged.neoforge.common.NeoForge;
+import net.swzo.create_blueprinted.CreateBlueprinted;
 import net.swzo.create_blueprinted.api.RenderSchematicImageEvent;
 import net.swzo.create_blueprinted.api.RenderSchematicImageEvent.Action;
-import net.swzo.create_blueprinted.api.SchematicRenderSettings;
+import net.swzo.create_blueprinted.render.ImageActionProgress;
+import net.swzo.create_blueprinted.render.SchematicRenderSettings;
+import net.swzo.create_blueprinted.api.ShareProvider;
+import net.swzo.create_blueprinted.api.ShareProviderRegistry;
 import net.swzo.create_blueprinted.exception.EmptyImageBakeException;
 import net.swzo.create_blueprinted.exception.EventCancelledException;
 import net.swzo.create_blueprinted.exception.SchematicImageRenderException;
-import net.swzo.create_blueprinted.renderers.SchematicImageRenderer;
-import net.swzo.create_blueprinted.util.DebugTimer;
-import net.swzo.create_blueprinted.util.FileUtils;
+import net.swzo.create_blueprinted.render.SchematicImageRenderer;
+import net.swzo.create_blueprinted.util.IOUtils;
 import net.swzo.create_blueprinted.util.SchematicUtils;
-import net.swzo.create_blueprinted.util.UiHelpers;
+import net.swzo.create_blueprinted.util.UIHelpers;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static net.swzo.create_blueprinted.CreateBlueprinted.*;
-import static net.swzo.create_blueprinted.renderers.SchematicImageRenderer.downsample;
+import static net.swzo.create_blueprinted.render.SchematicImageRenderer.downsample;
 import static net.swzo.create_blueprinted.util.ThreadUtils.onClientThread;
 import static net.swzo.create_blueprinted.util.ThreadUtils.onRenderThread;
 
@@ -59,12 +60,15 @@ public class SchematicImageHandler {
     private final String fileName;
     private final SchematicRenderSettings.Builder settingsBuilder;
     private final SchematicLevel schematicLevel;
+    private final @Nullable ShareProvider shareProvider;
+
     private @Nullable Supplier<SchematicImageRenderer> renderSupplier;
 
     public SchematicImageHandler(CommandSourceStack source, String fileName, SchematicRenderSettings.Builder settingsBuilder) {
         this.source = source;
         this.fileName = fileName;
         this.settingsBuilder = settingsBuilder;
+        this.shareProvider = ShareProviderRegistry.getMainProvider().orElse(null);
 
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null)
@@ -74,7 +78,7 @@ public class SchematicImageHandler {
     }
 
     private void attachToSchematicName() {
-        StructureTemplate template = SchematicUtils.loadTemplateFromSchematic(fileName);
+        StructureTemplate template = SchematicUtils.loadTemplateFromSchematicName(fileName);
         this.renderSupplier = () -> SchematicImageRenderer.bakeFromTemplate(template, schematicLevel)
                 .orElseThrow(() -> new EmptyImageBakeException("Structure template is empty."));
     }
@@ -88,16 +92,21 @@ public class SchematicImageHandler {
         Minecraft client = Minecraft.getInstance();
         renderAndDownsample(Action.EXPORT)
                 .thenApplyAsync(imageByteArray -> processExport(imageByteArray, client), PIPELINE)
-                .handle((path, e) -> onExportFinish(path, e, client));
+                .handle((file, e) -> onExportFinish(file, e, client));
     }
 
     public void share() {
-        renderAndDownsample(Action.SHARE);
+        if (shareProvider == null) return;
 
-    }
-
-    public static Stream<String> getAllSchematicNames() {
-        return CreateClient.SCHEMATIC_SENDER.getAvailableSchematics().stream().map(Component::getString);
+        Minecraft client = Minecraft.getInstance();
+        renderAndDownsample(Action.SHARE)
+                .thenApply(imageByteArray -> {
+                    if (imageByteArray != null) {
+                        ImageActionProgress.setState(ImageActionProgress.SHARING);
+                        return shareProvider.handle(fileName, imageByteArray);
+                    }
+                    return null;
+                }).handle((url, e) -> onShareFinish(url , e, client));
     }
 
     private CompletableFuture<byte[]> renderAndDownsample(Action action) {
@@ -106,7 +115,7 @@ public class SchematicImageHandler {
         SchematicRenderSettings settings = settingsBuilder.build();
         int ssaa = settings.antialiasingFactor();
 
-        DEBUG_TIMER.createTask("image-export", "Before schematic bake");
+        ImageActionProgress.start(fileName);
 
         Minecraft client = Minecraft.getInstance();
         return CompletableFuture.supplyAsync(() -> renderSupplier.get(), PIPELINE)
@@ -119,46 +128,63 @@ public class SchematicImageHandler {
                 .handle((imageByteArray, e) -> handleRenderExceptions(imageByteArray, e, client));
     }
 
-    private CompletableFuture<Void> onExportFinish(@Nullable Path outputFile, @Nullable Throwable e, Minecraft client) {
+    private CompletableFuture<Void> onShareFinish(@Nullable URL url, @Nullable Throwable e, Minecraft client) {
         Throwable cause = getExceptionCause(e);
 
-        DEBUG_TIMER.finishAndPrint("Export finished");
-
-        if (outputFile == null || cause != null) {
-            if (cause instanceof IOException) client.execute(() -> source.sendFailure(EXPORT_ERROR));
-            if (cause != null) LOGGER.error("Failed to export schematic image", e);
+        if (url == null || cause != null) {
+            if (cause != null) {
+                ImageActionProgress.setState(ImageActionProgress.SHARE_FAILED);
+                LOGGER.error("Failed to share schematic image", e);
+            }
             return CompletableFuture.completedFuture(null);
         }
         client.execute(() -> {
-            Component successMsg = translatable("command.renderschem.success")
-                    .withColor(UiHelpers.LIGHT_BLUE_TEXT_COLOR)
-                    .append(Component.literal(outputFile.toString())
-                            .withStyle(Style.EMPTY
-                                    .withColor(UiHelpers.DARK_BLUE_TEXT_COLOR)
-                                    .withUnderlined(true)
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFile.toString()))
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CLICK_TO_OPEN))));
-            source.sendSuccess(() -> successMsg, false);
+            ImageActionProgress.setState(ImageActionProgress.SHARED);
         });
         return CompletableFuture.completedFuture(null);
     }
 
-    private Path processExport(byte[] imageByteArray, Minecraft client) {
-        DEBUG_TIMER.markInstant("Before export");
+    private CompletableFuture<Void> onExportFinish(@Nullable File outputFile, @Nullable Throwable e, Minecraft client) {
+        Throwable cause = getExceptionCause(e);
 
+        if (outputFile == null || cause != null) {
+            if (cause instanceof IOException) client.execute(() -> source.sendFailure(EXPORT_ERROR));
+            if (cause != null) {
+                ImageActionProgress.setState(ImageActionProgress.EXPORT_FAILED);
+                LOGGER.error("Failed to export schematic image", e);
+            }
+            return CompletableFuture.completedFuture(null);
+        }
+        client.execute(() -> {
+            Component finalMessage = translatable("command.renderschem.success")
+                    .withColor(UIHelpers.LIGHT_BLUE_TEXT_COLOR)
+                    .append(Component.literal(outputFile.toString())
+                            .withStyle(Style.EMPTY
+                                    .withColor(UIHelpers.DARK_BLUE_TEXT_COLOR)
+                                    .withUnderlined(true)
+                                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFile.getAbsolutePath()))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CLICK_TO_OPEN))));
+            source.sendSuccess(() -> finalMessage, false);
+            ImageActionProgress.setState(ImageActionProgress.EXPORTED);
+        });
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private File processExport(byte[] imageByteArray, Minecraft client) {
         if (imageByteArray == null) return null;
         String gameDirectory = client.gameDirectory.getPath();
         File schematicDirectory = new File(gameDirectory, "schematics");
 
+        ImageActionProgress.setState(ImageActionProgress.EXPORTING);
+
         try {
-            return FileUtils.saveImage(schematicDirectory, fileName, "png", imageByteArray);
+            return IOUtils.saveImage(schematicDirectory, fileName, "png", imageByteArray);
         } catch (IOException e) {
             throw new CompletionException(e);
         }
     }
 
     private byte[] convertToByteArray(NativeImage image) {
-        DEBUG_TIMER.markInstant("Before convert to byte array");
         byte [] imageByteArray;
         try (image) {
             imageByteArray = image.asByteArray();
@@ -195,6 +221,8 @@ public class SchematicImageHandler {
         if (cause == null) return imageByteArray;
         else if (cause instanceof EventCancelledException) return null;
 
+        ImageActionProgress.setState(ImageActionProgress.RENDER_FAILED);
+
         client.execute(() -> {
             MutableComponent renderError = RENDER_ERROR.copy().append(" ");
 
@@ -208,7 +236,7 @@ public class SchematicImageHandler {
                 source.sendFailure(renderError.append(TIMED_OUT));
         });
         CreateBlueprinted.LOGGER.error("Failed to render schematic", e);
-        return imageByteArray;
+        return null;
     }
 
     private static Throwable getExceptionCause(@Nullable Throwable e) {

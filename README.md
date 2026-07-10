@@ -82,5 +82,19 @@ public static void onExportOrShareImage(RenderSchematicImageEvent.Post e) {
 }
 ```
 
+### Share Providers
+Share providers hook into the `/schematic share` command and the share button within the Schematic Table. Blueprinted doesn't add a default share provider, instead this functionality is handled by other mods that implement Blueprints API.
+
+To provide an implementation inherit from [ShareProvider.java](./src/main/java/net/swzo/create_blueprinted/api/ShareProvider.java) and register it using [ShareProviderRegistry.register()](./src/main/java/net/swzo/create_blueprinted/api/ShareProviderRegistry.java). Please make sure to read the documentation because you will need to perform some kind of image sanitization if you want to send to a remote server.
+
+Only 1 share provider can exist at any given time. The highest priority provider always takes precidence.
+
+### Using the Schematic Renderer
+You can also use the `SchematicImageHandler` directly and provide hooks to this within your own mod. By default this accepts a schematic file name but you can also attach a list of structure blocks by using `attachToBlockList()`.
+
+
+
 ## License
-This project is licensed under MIT
+This project is licensed under MIT.
+
+The mod includes [Create Schematic Viewer](https://modrinth.com/project/7ljLUpZn) as a bundled dependency. This mod is [licensed under MIT](https://github.com/titlo10/Create-Schematic-Preview/blob/main/LICENSE).

@@ -1,13 +1,9 @@
 package net.swzo.create_blueprinted.gui;
 
 import net.createmod.catnip.gui.TextureSheetSegment;
-import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.element.ScreenElement;
-import net.createmod.catnip.theme.Color;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import static net.swzo.create_blueprinted.CreateBlueprinted.rl;
@@ -28,16 +24,30 @@ import static net.swzo.create_blueprinted.CreateBlueprinted.rl;
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
  */
-
 public enum CBGuiTextures implements ScreenElement, TextureSheetSegment {
 
-    SHARE_ICON("share_icon", 0, 0, 16, 16, 16);
+    SHARE_ICON("share_icon", 0, 0, 13, 13, 13),
+    SAVE_ICON("save_icon", 0, 0, 13, 13, 13),
+    REFRESH_ICON("refresh_icon", 0, 0, 13, 13, 13),
+    SMALL_BUTTON( "small_buttons", 0, 0, 15, 15, 64),
+    SMALL_BUTTON_HOVER("small_buttons", 16, 0, 15, 15, 64),
+    SMALL_BUTTON_DOWN("small_buttons", 0, 16, 15, 15, 64),
+    SMALL_BUTTON_GREEN("small_buttons", 32, 0, 15, 15, 64),
+    SMALL_BUTTON_DISABLED("small_buttons", 16, 16, 15, 15, 64);
 
     public final ResourceLocation location;
     private final int width, height, startX, startY, textureWidth, textureHeight;
 
-    CBGuiTextures(String location, int startX, int startY, int width, int height, int textureSize) {
-        this.location = rl("textures/gui/" + location + ".png");
+    CBGuiTextures(String path, int startX, int startY, int width, int height, int textureSize) {
+        this(rl("textures/gui/" + path + ".png"), startX, startY, width, height, textureSize);
+    }
+
+    CBGuiTextures(String namespace, String path, int startX, int startY, int width, int height, int textureSize) {
+        this(rl(namespace, "textures/gui/" + path + ".png"), startX, startY, width, height, textureSize);
+    }
+
+    CBGuiTextures(ResourceLocation location, int startX, int startY, int width, int height, int textureSize) {
+        this.location = location;
         this.width = width;
         this.height = height;
         this.startX = startX;
@@ -54,12 +64,6 @@ public enum CBGuiTextures implements ScreenElement, TextureSheetSegment {
     @Override
     public void render(GuiGraphics graphics, int x, int y) {
         graphics.blit(location, x, y, startX, startY, width, height, textureWidth, textureHeight);
-    }
-
-    public void render(GuiGraphics graphics, int x, int y, Color c) {
-        bind();
-        UIRenderHelper.drawColoredTexture(graphics, c, x, y, 0, startX, startY, width, height,
-                textureWidth, textureHeight);
     }
 
     @Override
@@ -80,6 +84,14 @@ public enum CBGuiTextures implements ScreenElement, TextureSheetSegment {
     @Override
     public int getHeight() {
         return height;
+    }
+
+    public int getTextureWidth() {
+        return textureWidth;
+    }
+
+    public int getTextureHeight() {
+        return textureHeight;
     }
 }
 

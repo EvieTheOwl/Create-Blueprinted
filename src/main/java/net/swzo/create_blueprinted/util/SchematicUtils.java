@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class SchematicUtils {
 
-    public static StructureTemplate loadTemplateFromSchematic(String schematicName) {
+    public static StructureTemplate loadTemplateFromSchematicName(String schematicName) {
         Minecraft client = Minecraft.getInstance();
         String owner = Objects.requireNonNull(client.player).getGameProfile().getName();
         ItemStack blueprint = AllItems.SCHEMATIC.asStack();
@@ -27,11 +27,6 @@ public class SchematicUtils {
         return SchematicItem.loadSchematic(client.level, blueprint);
     }
 
-    /**
-     * Gets a stream of all loaded schematics by name.
-     *
-     * @return Stream of schematic names
-     */
     public static Stream<String> getAllSchematicNames() {
         return CreateClient.SCHEMATIC_SENDER.getAvailableSchematics().stream().map(Component::getString);
     }
@@ -46,11 +41,5 @@ public class SchematicUtils {
             return Optional.empty();
         }
         return Optional.of(availableSchematics.get(schematicIndex).getString());
-    }
-
-    public static String sanitizeFileName(String schematicFileName) {
-        if (schematicFileName.endsWith(".nbt"))
-            schematicFileName = schematicFileName.substring(0, schematicFileName.length() - 4);
-        return schematicFileName;
     }
 }

@@ -1,6 +1,6 @@
 package net.swzo.create_blueprinted.mixin;
 
-import org.example.test.createschematicpreview.client.SchematicPreviewPanel;
+import dev.titlo10.createschematicpreview.gui.SchematicPreviewPanel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 

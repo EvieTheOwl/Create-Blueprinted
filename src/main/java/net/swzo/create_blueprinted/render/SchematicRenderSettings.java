@@ -1,30 +1,20 @@
-package net.swzo.create_blueprinted.api;
+package net.swzo.create_blueprinted.render;
 
 import net.createmod.catnip.theme.Color;
+
+import static net.swzo.create_blueprinted.config.CreateBlueprintedConfig.CONFIG;
 
 public class SchematicRenderSettings {
 
     public static final Color DEFAULT_BG_COLOR = Color.TRANSPARENT_BLACK;
     public static final int MAX_ANTIALIASING = 4;
-    public static final int DEFAULT_ANTIALIASING = 2;
     public static final int MIN_WIDTH = 64;
     public static final int MAX_WIDTH = 8192;
-    public static final int DEFAULT_WIDTH = 1024;
-    public static final float ISOMETRIC_PITCH = 35.264f;
 
     private final int imageWidth;
     private final Orientation orientation;
     private final int antialiasingFactor;
     private final Color backgroundColor;
-
-    public record Orientation(float yaw, float pitch, float roll) {
-
-        public static final Orientation ISOMETRIC_RIGHT = new Orientation(45f, ISOMETRIC_PITCH, 0f);
-
-        public Orientation(float yaw, float pitch) {
-            this(yaw, pitch, 0);
-        }
-    }
 
     private SchematicRenderSettings(int imageWidth, Orientation orientation, int antialiasingFactor, Color backgroundColor) {
         this.imageWidth = imageWidth;
@@ -42,14 +32,22 @@ public class SchematicRenderSettings {
         return new Builder();
     }
 
-    public static Builder builder(SchematicRenderSettings settings) {
-        return new Builder(settings);
-    }
-
     public int imageWidth() { return imageWidth * antialiasingFactor; }
     public Orientation orientation() { return orientation; }
     public int antialiasingFactor() { return antialiasingFactor; }
     public Color backgroundColor() { return backgroundColor; }
+
+    public record Orientation(float yaw, float pitch, float roll) {
+
+        public Orientation(float yaw, float pitch) {
+            this(yaw, pitch, 0);
+        }
+
+        public Orientation() {
+            this(CONFIG.orientationConfig.defaultYaw.getF(), CONFIG.orientationConfig.defaultPitch.getF(),
+                    CONFIG.orientationConfig.defaultRoll.getF());
+        }
+    }
 
     // Builder class
     public static class Builder {
@@ -59,9 +57,9 @@ public class SchematicRenderSettings {
         private Color backgroundColor;
 
         public Builder() {
-            this.imageWidth = DEFAULT_WIDTH;
-            this.orientation = Orientation.ISOMETRIC_RIGHT;
-            this.antialiasingFactor = DEFAULT_ANTIALIASING;
+            this.imageWidth = CONFIG.defaultWidth.get();
+            this.orientation = new Orientation();
+            this.antialiasingFactor = CONFIG.defaultAntialiasing.get();
             this.backgroundColor = DEFAULT_BG_COLOR;
         }
 

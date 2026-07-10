@@ -1,4 +1,4 @@
-package net.swzo.create_blueprinted.renderers;
+package net.swzo.create_blueprinted.render;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
@@ -26,10 +26,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.material.FluidState;
 import net.swzo.create_blueprinted.CreateBlueprinted;
-import net.swzo.create_blueprinted.api.SchematicRenderSettings;
-import net.swzo.create_blueprinted.api.SchematicRenderSettings.Orientation;
+import net.swzo.create_blueprinted.render.SchematicRenderSettings.Orientation;
 import net.swzo.create_blueprinted.exception.SchematicImageRenderException;
-import net.swzo.create_blueprinted.util.DebugTimer;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -39,8 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static net.swzo.create_blueprinted.CreateBlueprinted.DEBUG_TIMER;
 
 public final class SchematicImageRenderer {
 
@@ -102,10 +98,10 @@ public final class SchematicImageRenderer {
     }
 
     public @NotNull NativeImage render(SchematicRenderSettings settings) throws SchematicImageRenderException {
-        DEBUG_TIMER.markInstant("After bake");
-
         RenderSystem.assertOnRenderThread();
         BoundingBox bounds = schematicLevel.getBounds();
+
+        ImageActionProgress.setState(ImageActionProgress.RENDERING);
 
         float minX = bounds.minX(), minY = bounds.minY(), minZ = bounds.minZ();
         float maxX = bounds.maxX() + 1f, maxY = bounds.maxY() + 1f, maxZ = bounds.maxZ() + 1f;
@@ -185,9 +181,7 @@ public final class SchematicImageRenderer {
             SuperRenderTypeBuffer buffers = DefaultSuperRenderTypeBuffer.getInstance();
             var renderer = new SchematicRenderer(schematicLevel);
 
-            DEBUG_TIMER.markInstant("Before main render");
             renderer.render(poseStack, buffers);
-            DEBUG_TIMER.markInstant("Before fluids render");
             renderFluids(poseStack, buffers);
             buffers.draw();
             poseStack.popPose();
@@ -196,7 +190,7 @@ public final class SchematicImageRenderer {
             try {
                 image = new NativeImage(targetW, targetH, false);
                 RenderSystem.bindTexture(renderTarget.getColorTextureId());
-                DEBUG_TIMER.markInstant("Before download texture");
+
                 image.downloadTexture(0, false);
                 image.flipY();
             } catch (Exception e) {
@@ -241,7 +235,6 @@ public final class SchematicImageRenderer {
     }
 
     public static NativeImage downsample(NativeImage source, int factor) throws SchematicImageRenderException {
-        DEBUG_TIMER.markInstant("Before downsample render");
         try (source) {
             int outW = Math.max(1, source.getWidth() / factor);
             int outH = Math.max(1, source.getHeight() / factor);

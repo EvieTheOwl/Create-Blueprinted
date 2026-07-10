@@ -1,4 +1,4 @@
-package net.swzo.create_blueprinted.renderers;
+package net.swzo.create_blueprinted.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;

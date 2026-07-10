@@ -2,17 +2,18 @@ package net.swzo.create_blueprinted.util;
 
 import net.swzo.create_blueprinted.CreateBlueprinted;
 
+import java.awt.*;
+import java.awt.datatransfer.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Set;
 
-public class FileUtils {
+public class IOUtils {
 
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("png", "jpg", "jpeg", "gif", "bmp", "webp" );
 
-    public static Path saveImage(File directory, String fileName, String extension, byte[] imageByteArray) throws IOException, IllegalArgumentException {
+    public static File saveImage(File directory, String fileName, String extension, byte[] imageByteArray) throws IOException, IllegalArgumentException {
         String fileNameAndExt = fileName + "." + extension;
         String errorPrefix = "Failed to write image: " + fileNameAndExt + ". ";
 
@@ -33,7 +34,7 @@ public class FileUtils {
             if (!tempFile.renameTo(outputFile))
                 throw new IOException("Failed to rename temporary image file: " + tempFile.getAbsolutePath());
 
-            return outputFile.toPath();
+            return outputFile;
         } catch (IOException e) {
             if (!tempFile.delete())
                 CreateBlueprinted.LOGGER.error("Failed to delete temporary image file: {}", tempFile.getAbsolutePath());

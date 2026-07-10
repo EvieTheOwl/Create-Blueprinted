@@ -9,7 +9,7 @@ displayName = "${mod_name}"
 displayURL = "https://brassworks.opnsoc.org/"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
-logoFile="assets/${mod_id}/icon.png"
+logoFile = "icon.png"
 
 [[mixins]]
 config = "${mod_id}.mixins.json"
@@ -19,12 +19,19 @@ modId = "neoforge"
 type = "required"
 versionRange = "${neo_version_range}"
 ordering = "NONE"
-side = "BOTH"
+side = "CLIENT"
 
 [[dependencies."${mod_id}"]]
 modId = "minecraft"
 type = "required"
-
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
-side = "BOTH"
+side = "CLIENT"
+
+[[dependencies."${mod_id}"]]
+modId = "createschematicpreview"
+type = "required"
+versionRange = "[1.3, 2)"
+ordering = "NONE"
+side = "CLIENT"
+
