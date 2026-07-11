@@ -2,7 +2,7 @@ package net.swzo.create_blueprinted.render;
 
 import net.createmod.catnip.theme.Color;
 
-import static net.swzo.create_blueprinted.config.CreateBlueprintedConfig.CONFIG;
+import static net.swzo.create_blueprinted.CreateBlueprintedConfig.CONFIG;
 
 public class SchematicRenderSettings {
 
@@ -39,13 +39,11 @@ public class SchematicRenderSettings {
 
     public record Orientation(float yaw, float pitch, float roll) {
 
+        public static final Orientation ISOMETRIC_RIGHT = new Orientation(-45f, 35.264f, 0f);
+        public static final Orientation ISOMETRIC_LEFT = new Orientation(45f, 35.264f, 0f);
+
         public Orientation(float yaw, float pitch) {
             this(yaw, pitch, 0);
-        }
-
-        public Orientation() {
-            this(CONFIG.orientationConfig.defaultYaw.getF(), CONFIG.orientationConfig.defaultPitch.getF(),
-                    CONFIG.orientationConfig.defaultRoll.getF());
         }
     }
 
@@ -58,7 +56,7 @@ public class SchematicRenderSettings {
 
         public Builder() {
             this.imageWidth = CONFIG.defaultWidth.get();
-            this.orientation = new Orientation();
+            this.orientation = Orientation.ISOMETRIC_RIGHT;
             this.antialiasingFactor = CONFIG.defaultAntialiasing.get();
             this.backgroundColor = DEFAULT_BG_COLOR;
         }

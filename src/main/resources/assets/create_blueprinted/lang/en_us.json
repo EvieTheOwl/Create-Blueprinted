@@ -1,7 +1,7 @@
 {
   "create_blueprinted.gui.schematic_table.render_button.res": "Width: ",
   "create_blueprinted.gui.schematic_table.render_button.res.hint": " (Hold [%s] for 2048)",
-  "create_blueprinted.gui.schematic_table.render_button.dir": "Dir: ",
+  "create_blueprinted.gui.schematic_table.render_button.dir": "Direction: ",
   "create_blueprinted.gui.schematic_table.render_button.dir.left": "Left",
   "create_blueprinted.gui.schematic_table.render_button.dir.right": "Right",
   "create_blueprinted.gui.schematic_table.render_button.dir.hint": " (Hold [%s] for Left)",

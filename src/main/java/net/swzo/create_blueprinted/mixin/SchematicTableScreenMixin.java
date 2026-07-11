@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
+import dev.titlo10.createschematicpreview.CSPConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.commands.CommandSourceStack;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static net.swzo.create_blueprinted.config.CreateBlueprintedConfig.CONFIG;
+import static net.swzo.create_blueprinted.CreateBlueprintedConfig.CONFIG;
 
 @Mixin(value = SchematicTableScreen.class)
 public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScreen<SchematicTableMenu> implements PreviewScreenAccess {
@@ -53,7 +54,7 @@ public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScr
     @SuppressWarnings("FieldCanBeLocal")
     @Unique private IconButton cb$exportButton, cb$shareButton;
 
-    @Unique private boolean cb$shiftWasDownOnInit = false;
+    @Unique private boolean cb$shiftWasDownOnInit, cb$ctrlWasDownOnInit;
 
     protected SchematicTableScreenMixin(SchematicTableMenu container, Inventory inv, Component title) {
         super(container, inv, title);
@@ -62,6 +63,7 @@ public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScr
     @Inject(method = "init", at = @At("HEAD"))
     private void onInitHead(CallbackInfo ci) {
         cb$shiftWasDownOnInit = Screen.hasShiftDown();
+        cb$ctrlWasDownOnInit = Screen.hasControlDown();
     }
 
     @Inject(method = "init", at = @At("TAIL"))
@@ -117,9 +119,13 @@ public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScr
         Optional<String> fileName = SchematicUtils.getSchematicNameFromIndex(schematicsArea.getState());
         if (fileName.isEmpty()) return Optional.empty();
 
-        Orientation orientation = CONFIG.usePreviewRotation.get()
-                ? new Orientation(previewPanel.yaw(), previewPanel.pitch())
-                : new Orientation();
+        boolean ctrlActive = Screen.hasControlDown() && !cb$ctrlWasDownOnInit;
+        Orientation orientation;
+
+        if (!CONFIG.usePreviewRotation.get() || !CSPConfig.CONFIG.previewEnabled.get())
+            orientation = ctrlActive ? Orientation.ISOMETRIC_LEFT : Orientation.ISOMETRIC_RIGHT;
+        else
+            orientation = new Orientation(previewPanel.yaw(), previewPanel.pitch());
 
         boolean shiftActive = Screen.hasShiftDown() && !cb$shiftWasDownOnInit;
         int imageWidth = shiftActive ? CONFIG.alternateWidth.get() : CONFIG.defaultWidth.get();

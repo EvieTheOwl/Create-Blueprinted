@@ -1,4 +1,4 @@
-package net.swzo.create_blueprinted.config;
+package net.swzo.create_blueprinted;
 
 import net.createmod.catnip.config.ConfigBase;
 import net.neoforged.api.distmarker.Dist;
@@ -30,9 +30,6 @@ public class CreateBlueprintedConfig extends ConfigBase {
 
     public final ConfigInt defaultAntialiasing = i(2, 1, 4, "defaultAntialiasing",
             "Default antialiasing factor for a schematic Image.");
-
-    public final OrientationConfig orientationConfig = nested(0, OrientationConfig::new,
-            "Image Orientation");
 
     @Override
     public @NotNull String getName() {

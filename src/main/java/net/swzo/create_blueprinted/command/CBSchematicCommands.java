@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.commands.Commands.literal;
 import static net.minecraft.commands.Commands.argument;
-import static net.swzo.create_blueprinted.config.CreateBlueprintedConfig.CONFIG;
+import static net.swzo.create_blueprinted.CreateBlueprintedConfig.CONFIG;
 import static net.swzo.create_blueprinted.render.SchematicRenderSettings.*;
 
 public class CBSchematicCommands {
