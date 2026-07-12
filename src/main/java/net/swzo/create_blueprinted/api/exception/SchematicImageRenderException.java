@@ -1,4 +1,4 @@
-package net.swzo.create_blueprinted.exception;
+package net.swzo.create_blueprinted.api.exception;
 
 public class SchematicImageRenderException extends RuntimeException {
     public SchematicImageRenderException(String message, Exception e) {

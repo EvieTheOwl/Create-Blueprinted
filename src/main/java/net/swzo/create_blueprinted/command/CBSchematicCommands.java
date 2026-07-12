@@ -72,7 +72,7 @@ public class CBSchematicCommands {
     
     private static int dispatch(CommandContext<CommandSourceStack> ctx, SchematicRenderSettings.Builder settingsBuilder) {
         String fileName = StringArgumentType.getString(ctx, "fileName");
-        var imageHandler = new SchematicImageHandler(ctx.getSource(), fileName, settingsBuilder);
+        var imageHandler = new SchematicImageHandler(fileName, ctx.getSource(), settingsBuilder);
 
         for (var node : ctx.getNodes()) {
             String nodeName = node.getNode().getName();

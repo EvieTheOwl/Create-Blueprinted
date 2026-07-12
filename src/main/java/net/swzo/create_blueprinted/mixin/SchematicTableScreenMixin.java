@@ -137,7 +137,7 @@ public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScr
         CommandSourceStack source = Objects.requireNonNull(player).createCommandSourceStack();
         Minecraft.getInstance().setScreen(null);
 
-        return Optional.of(new SchematicImageHandler(source, fileName.get(), settingsbuilder));
+        return Optional.of(new SchematicImageHandler(fileName.get(), source, settingsbuilder));
     }
 
     @Inject(method = "containerTick", at = @At("TAIL"))

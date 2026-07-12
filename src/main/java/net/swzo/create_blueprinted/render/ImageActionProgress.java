@@ -77,6 +77,10 @@ public enum ImageActionProgress {
             PROGRESS_STATE.set(new ProgressState(progress, fileName, now() + LINGER_MILLIS));
     }
 
+    public static void cancel() {
+        PROGRESS_STATE.set(INACTIVE_STATE);
+    }
+
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         ProgressState state = PROGRESS_STATE.get();

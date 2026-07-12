@@ -27,7 +27,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.material.FluidState;
 import net.swzo.create_blueprinted.CreateBlueprinted;
 import net.swzo.create_blueprinted.render.SchematicRenderSettings.Orientation;
-import net.swzo.create_blueprinted.exception.SchematicImageRenderException;
+import net.swzo.create_blueprinted.api.exception.SchematicImageRenderException;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;

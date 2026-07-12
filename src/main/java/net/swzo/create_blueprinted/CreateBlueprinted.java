@@ -14,8 +14,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.swzo.create_blueprinted.api.ShareProviderRegistry;
-import net.swzo.create_blueprinted.api.TestShareProvider;
 import net.swzo.create_blueprinted.command.CBSchematicCommands;
 import net.swzo.create_blueprinted.util.DebugTimer;
 import net.swzo.create_blueprinted.util.UIHelpers;
@@ -35,8 +33,6 @@ public class CreateBlueprinted {
         container.registerConfig(ModConfig.Type.CLIENT, CONFIG.specification);
         container.registerExtensionPoint(IConfigScreenFactory.class, (_container, screen)
                 -> new BaseConfigScreen(screen, _container.getModId()));
-
-        ShareProviderRegistry.register(new TestShareProvider());
     }
 
     public static ResourceLocation rl(String path) {
