@@ -1,21 +1,34 @@
 package net.swzo.create_blueprinted.mixin;
 
-import com.google.common.collect.ImmutableList;
 import com.simibubi.create.CreateClient;
+import com.simibubi.create.content.schematics.client.ClientSchematicLoader;
+import com.simibubi.create.content.schematics.table.SchematicTableMenu;
 import com.simibubi.create.content.schematics.table.SchematicTableScreen;
-import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
-import net.minecraft.ChatFormatting;
+import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
+import com.simibubi.create.foundation.utility.CreateLang;
+import dev.titlo10.createschematicpreview.CSPConfig;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.swzo.create_blueprinted.util.CreateSchematicExporter;
-import net.swzo.create_blueprinted.util.UiHelpers;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.swzo.create_blueprinted.handler.SchematicImageHandler;
+import net.swzo.create_blueprinted.render.SchematicRenderSettings;
+import net.swzo.create_blueprinted.render.SchematicRenderSettings.Orientation;
+import net.swzo.create_blueprinted.api.ShareProviderRegistry;
+import net.swzo.create_blueprinted.gui.CBGuiTextures;
+import net.swzo.create_blueprinted.gui.ExportButton;
+import net.swzo.create_blueprinted.gui.ShareButton;
+import net.swzo.create_blueprinted.gui.SmallIconButton;
+import net.swzo.create_blueprinted.util.SchematicUtils;
+import net.swzo.create_blueprinted.util.UIHelpers;
+import dev.titlo10.createschematicpreview.mixin_interfaces.PreviewScreenAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -23,119 +36,119 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-@Mixin(SchematicTableScreen.class)
-public abstract class SchematicTableScreenMixin extends Screen {
+import static net.swzo.create_blueprinted.CreateBlueprintedConfig.CONFIG;
+
+@Mixin(value = SchematicTableScreen.class)
+public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScreen<SchematicTableMenu> implements PreviewScreenAccess {
+
+    @Unique private final Component cb$availableSchematicsTitle = CreateLang.translateDirect("gui.schematicTable.availableSchematics");
+
     @Shadow private ScrollInput schematicsArea;
-    @Shadow private IconButton refreshButton;
-    @Shadow private List<Rect2i> extraAreas;
+
     @Shadow private Label schematicsLabel;
+    @Shadow private IconButton refreshButton;
+    @SuppressWarnings("FieldCanBeLocal")
+    @Unique private IconButton cb$exportButton, cb$shareButton;
 
-    @Unique private boolean brassworks$shiftWasDownOnInit = false;
-    @Unique private boolean brassworks$ctrlWasDownOnInit = false;
+    @Unique private boolean cb$shiftWasDownOnInit, cb$ctrlWasDownOnInit;
 
-    protected SchematicTableScreenMixin(Component component) {
-        super(component);
+    protected SchematicTableScreenMixin(SchematicTableMenu container, Inventory inv, Component title) {
+        super(container, inv, title);
     }
 
     @Inject(method = "init", at = @At("HEAD"))
     private void onInitHead(CallbackInfo ci) {
-        brassworks$shiftWasDownOnInit = Screen.hasShiftDown();
-        brassworks$ctrlWasDownOnInit = Screen.hasControlDown();
-    }
-
-    @Unique
-    private String brassworks$selectedFilename() {
-        if (schematicsArea == null) return null;
-        int index = schematicsArea.getState();
-        List<Component> availableSchematics = CreateClient.SCHEMATIC_SENDER.getAvailableSchematics();
-        if (index < 0 || index >= availableSchematics.size()) return null;
-        String filename = availableSchematics.get(index).getString();
-        if (filename.endsWith(".nbt")) {
-            filename = filename.substring(0, filename.length() - 4);
-        }
-        return filename;
+        cb$shiftWasDownOnInit = Screen.hasShiftDown();
+        cb$ctrlWasDownOnInit = Screen.hasControlDown();
     }
 
     @Inject(method = "init", at = @At("TAIL"))
     private void onInitTail(CallbackInfo ci) {
-        int renderButtonX = refreshButton.getX();
-        int renderButtonY = refreshButton.getY() - refreshButton.getHeight() - 4;
+        cb$exportButton = new ExportButton(leftPos + 205, topPos + 1);
+        cb$exportButton.withCallback(() ->
+                cb$createSchematicImageHandler().ifPresent(SchematicImageHandler::export)
+        );
+        if (ShareProviderRegistry.hasShareProvider()) {
+            cb$shareButton = new ShareButton(leftPos + 205, topPos + 18);
+            cb$shareButton.withCallback(() ->
+                    cb$createSchematicImageHandler().ifPresent(SchematicImageHandler::share)
+            );
+            cb$shareButton.active = CONFIG.enableImageSharing.get();
+            this.addRenderableWidget(cb$shareButton);
+        }
+        this.addRenderableWidget(cb$exportButton);
+        cb$replaceRefreshButton();
+    }
 
-        IconButton renderButton = new IconButton(renderButtonX, renderButtonY, AllIcons.I_CONFIG_SAVE) {
-            @Override
-            public void doRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+    @Unique
+    private void cb$replaceRefreshButton() {
+        this.removeWidget(refreshButton);
 
-                if (!Screen.hasShiftDown()) SchematicTableScreenMixin.this.brassworks$shiftWasDownOnInit = false;
-                if (!Screen.hasControlDown()) SchematicTableScreenMixin.this.brassworks$ctrlWasDownOnInit = false;
+        int topPos = this.topPos + (ShareProviderRegistry.hasShareProvider() ? 35 : 18);
+        refreshButton = new SmallIconButton(leftPos + 205, topPos, CBGuiTextures.REFRESH_ICON);
+        refreshButton.withCallback(() -> {
+            ClientSchematicLoader schematicSender = CreateClient.SCHEMATIC_SENDER;
+            schematicSender.refresh();
+            List<Component> availableSchematics1 = schematicSender.getAvailableSchematics();
+            removeWidget(schematicsArea);
 
-                boolean shiftActive = Screen.hasShiftDown() && !SchematicTableScreenMixin.this.brassworks$shiftWasDownOnInit;
-                boolean ctrlActive = Screen.hasControlDown() && !SchematicTableScreenMixin.this.brassworks$ctrlWasDownOnInit;
-
-                this.toolTip.clear();
-                this.toolTip.add(Component.translatable("create_blueprinted.gui.schematic_table.render_button.title").withColor(UiHelpers.DARK_BLUE_TEXT_COLOR));
-
-                var resComponent = Component.translatable("create_blueprinted.gui.schematic_table.render_button.res").withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(shiftActive ? "2048" : "1024").withColor(UiHelpers.LIGHT_BLUE_TEXT_COLOR));
-
-                if (!shiftActive) {
-                    resComponent.append(Component.translatable("create_blueprinted.gui.schematic_table.render_button.res.hint",
-                            Component.literal("Shift").withStyle(ChatFormatting.GRAY)
-                    ).withStyle(ChatFormatting.DARK_GRAY));
-                }
-                this.toolTip.add(resComponent);
-
-                var dirComponent = Component.translatable("create_blueprinted.gui.schematic_table.render_button.dir").withStyle(ChatFormatting.GRAY)
-                        .append(Component.translatable(ctrlActive ? "create_blueprinted.gui.schematic_table.render_button.dir.left" : "create_blueprinted.gui.schematic_table.render_button.dir.right").withColor(UiHelpers.LIGHT_BLUE_TEXT_COLOR));
-
-                if (!ctrlActive) {
-                    dirComponent.append(Component.translatable("create_blueprinted.gui.schematic_table.render_button.dir.hint",
-                            Component.literal("Ctrl").withStyle(ChatFormatting.GRAY)
-                    ).withStyle(ChatFormatting.DARK_GRAY));
-                }
-                this.toolTip.add(dirComponent);
-
-                this.toolTip.add(Component.literal(" "));
-                this.toolTip.add(Component.translatable("create_blueprinted.gui.schematic_table.render_button.save_hint").withStyle(ChatFormatting.GRAY));
-                this.toolTip.add(Component.translatable("create_blueprinted.gui.schematic_table.render_button.chat_hint").withStyle(ChatFormatting.GRAY));
-                this.toolTip.add(Component.translatable("create_blueprinted.gui.schematic_table.render_button.chat_hint_visibility").withStyle(ChatFormatting.DARK_GRAY));
-
-                super.doRender(graphics, mouseX, mouseY, partialTicks);
-            }
-        };
-
-        renderButton.withCallback(() -> {
-            String filename = brassworks$selectedFilename();
-            if (filename == null) return;
-
-            boolean shiftActive = Screen.hasShiftDown() && !brassworks$shiftWasDownOnInit;
-            boolean ctrlActive = Screen.hasControlDown() && !brassworks$ctrlWasDownOnInit;
-
-            int imageWidth = shiftActive ? 2048 : 1024;
-            String orientation = ctrlActive ? "left" : "right";
-
-            if (Minecraft.getInstance().player != null) {
-                CommandSourceStack source = Minecraft.getInstance().player.createCommandSourceStack();
-                CreateSchematicExporter.export(source, filename, orientation, imageWidth);
-                Minecraft.getInstance().setScreen(null);
+            if (!availableSchematics1.isEmpty()) {
+                schematicsArea = new SelectionScrollInput(leftPos + 45, this.topPos + 21, 139, 18)
+                        .forOptions(availableSchematics1)
+                        .titled(cb$availableSchematicsTitle.plainCopy())
+                        .writingTo(schematicsLabel);
+                schematicsArea.onChanged();
+                addRenderableWidget(schematicsArea);
+            } else {
+                schematicsArea = null;
+                schematicsLabel.text = CommonComponents.EMPTY;
             }
         });
+        this.addRenderableWidget(refreshButton);
+    }
 
-        this.addRenderableWidget(renderButton);
-        List<Rect2i> newExtraAreas = new ArrayList<>(this.extraAreas);
-        newExtraAreas.add(new Rect2i(renderButtonX, renderButtonY, renderButton.getWidth(), renderButton.getHeight()));
-        this.extraAreas = ImmutableList.copyOf(newExtraAreas);
+    @Unique
+    private Optional<SchematicImageHandler> cb$createSchematicImageHandler() {
+        var previewPanel = (SchematicPreviewAccessor) csp$getPanel();
+        if (previewPanel == null || schematicsArea == null) return Optional.empty();
+
+        Optional<String> fileName = SchematicUtils.getSchematicNameFromIndex(schematicsArea.getState());
+        if (fileName.isEmpty()) return Optional.empty();
+
+        boolean ctrlActive = Screen.hasControlDown() && !cb$ctrlWasDownOnInit;
+        Orientation orientation;
+
+        if (!CONFIG.usePreviewRotation.get() || !CSPConfig.CONFIG.previewEnabled.get())
+            orientation = ctrlActive ? Orientation.ISOMETRIC_LEFT : Orientation.ISOMETRIC_RIGHT;
+        else
+            orientation = new Orientation(previewPanel.yaw(), previewPanel.pitch());
+
+        boolean shiftActive = Screen.hasShiftDown() && !cb$shiftWasDownOnInit;
+        int imageWidth = shiftActive ? CONFIG.alternateWidth.get() : CONFIG.defaultWidth.get();
+        var settingsbuilder = SchematicRenderSettings.builder()
+                .imageWidth(imageWidth)
+                .orientation(orientation);
+
+        Player player = Minecraft.getInstance().player;
+        CommandSourceStack source = Objects.requireNonNull(player).createCommandSourceStack();
+        Minecraft.getInstance().setScreen(null);
+
+        return Optional.of(new SchematicImageHandler(fileName.get(), source, settingsbuilder));
     }
 
     @Inject(method = "containerTick", at = @At("TAIL"))
     private void onContainerTickTail(CallbackInfo ci) {
         if (schematicsArea != null && schematicsLabel != null && schematicsLabel.text != null) {
             String originalText = schematicsLabel.text.getString();
+
             if (!originalText.isEmpty()) {
                 int maxWidth = schematicsArea.getWidth() - 5;
-                String truncatedText = UiHelpers.truncateString(Minecraft.getInstance().font, originalText, maxWidth);
+
+                String truncatedText = UIHelpers.truncateString(Minecraft.getInstance().font, originalText, maxWidth);
                 schematicsLabel.text = Component.literal(truncatedText);
             }
         }

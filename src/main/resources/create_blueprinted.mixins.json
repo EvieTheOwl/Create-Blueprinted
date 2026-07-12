@@ -3,10 +3,9 @@
   "minVersion": "0.8",
   "package": "net.swzo.create_blueprinted.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-  ],
+  "mixins": [],
   "client": [
-    "SchematicRendererAccessor",
+    "SchematicPreviewAccessor",
     "SchematicTableScreenMixin"
   ],
   "injectors": {
