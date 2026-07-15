@@ -3,10 +3,6 @@
 Originally made for the [Brassworks SMP](https://brassworks.opnsoc.org/), this mod is free and open for anyone to use!
 
 Create: Blueprinted allows you to render your Create mod schematics into high-resolution PNG images straight from the game.
-
-## Dependencies
-Version 2+ requires [Create Schematic Preview](https://modrinth.com/mod/create-schematic-preview). 
-This is used to preview schematics and select their orientation (rotation) before rendering.
 ___
 ## Features
 * **High-Resolution Renders:** Render your `.nbt` schematics to crisp PNGs directly from the Schematic Table UI or a command.
@@ -23,6 +19,8 @@ You can render schematics directly from the Schematic Table. Just select your sc
 
 Hold **Shift** while clicking to render at 2048px (instead of the default 1024px). 
 Rotate the schematic preview to select a unique orientation for your image.
+
+[Create: Schematic Preview](https://modrinth.com/project/7ljLUpZn) *(licensed under [MIT](https://github.com/titlo10/Create-Schematic-Preview/blob/main/LICENSE))* is included as a embedded dependency for the purpose of previewing schematics and setting their rotation before rendering. 
 
 ![Render Button in UI](showcase/ui.png)
 ![Example Rendered Output](showcase/render.png)
