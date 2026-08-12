@@ -6,6 +6,7 @@ import net.swzo.create_blueprinted.render.SchematicRenderSettings;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URL;
+import java.util.List;
 
 /**
  * <p>A provider used whenever the share button or command is fired by the player.</p>
@@ -71,8 +72,30 @@ public interface ShareProvider {
     default void onRenderFailure(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings, Throwable error, Component errorMessage) {}
 
     /**
-     * Gets the priority of the current provider. Used to compare against other mods that implement a provider.
-     * Only the highest priority provider is used by Create Configured.
+     * Additional information about the share provider. Displayed in the tooltip below the destination name and url.
+     * Also shown before a file is shared using the <code>/schematic share</code> command.
+     *
+     * @return Text components representing extra information tied to the share provider.
+     *         Each element represents a newline.
+     */
+    default List<Component> extras() { return List.of(); }
+
+    /**
+     * Whether to hide the SHIFT & CTRL hints displayed in the schematic table tooltip.
+     *
+     * @return If true disable hints, otherwise include them.
+     */
+    default boolean hideTooltipHints() { return false; }
+
+    /**
+     * Whether schematic data is also sent. This could include data about block types and positions,
+     * block entity data, etc...
+     */
+    default boolean includeSchematicData() { return false; }
+
+    /**
+     * Gets the priority of the current provider. The highest priority provider is shown to the user
+     * the first time Create: Configured is loaded. Then it is manually set by the user.
      *
      * @return Priority of the current provider (Default value = 1)
      */

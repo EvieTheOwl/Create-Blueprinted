@@ -75,7 +75,7 @@ public class SchematicImageHandler {
         this.source = source;
         this.schematicName = schematicName;
         this.settingsBuilder = settingsBuilder;
-        this.shareProvider = ShareProviderRegistry.getMainProvider().orElse(null);
+        this.shareProvider = ShareProviderRegistry.getActiveShareProvider().orElse(null);
 
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null)
