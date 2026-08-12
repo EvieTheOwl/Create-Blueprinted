@@ -4,7 +4,9 @@ import net.createmod.catnip.config.ConfigBase;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -57,4 +59,9 @@ public class CreateBlueprintedConfig extends ConfigBase {
         if (CONFIG.specification == e.getConfig().getSpec()) CONFIG.onLoad();
     }
 
+    static String getFullConfigName() {
+        boolean oldServerConfigExists = FMLPaths.CONFIGDIR.get()
+                .resolve(CreateBlueprinted.MOD_ID + "-client.toml").toFile().exists();
+        return (oldServerConfigExists ? CreateBlueprinted.MOD_ID : CreateBlueprinted.CONFIG_ID) + "-client.toml";
+    }
 }

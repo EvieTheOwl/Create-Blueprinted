@@ -18,6 +18,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.swzo.create_blueprinted.CreateBlueprinted;
 import net.swzo.create_blueprinted.handler.SchematicImageHandler;
 import net.swzo.create_blueprinted.render.SchematicRenderSettings;
 import net.swzo.create_blueprinted.render.SchematicRenderSettings.Orientation;
@@ -152,5 +153,11 @@ public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScr
                 schematicsLabel.text = Component.literal(truncatedText);
             }
         }
+    }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+        CreateBlueprinted.State.activeShareProvider.save();
     }
 }

@@ -29,6 +29,13 @@ ordering = "NONE"
 side = "CLIENT"
 
 [[dependencies."${mod_id}"]]
+modId = "create"
+type = "required"
+versionRange = "[6, 7)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies."${mod_id}"]]
 modId = "createschematicpreview"
 type = "required"
 versionRange = "[1.3, 2)"

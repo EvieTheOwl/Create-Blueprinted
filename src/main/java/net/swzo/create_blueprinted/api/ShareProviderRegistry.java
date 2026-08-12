@@ -1,10 +1,9 @@
 package net.swzo.create_blueprinted.api;
 
+import net.minecraft.resources.ResourceLocation;
 import net.swzo.create_blueprinted.impl.ShareProviderRegistryImpl;
 
 import java.util.*;
-
-import static net.swzo.create_blueprinted.impl.ShareProviderRegistryImpl.PROVIDERS;
 
 public final class ShareProviderRegistry {
 
@@ -24,11 +23,38 @@ public final class ShareProviderRegistry {
      *
      * @return The highest priority share provider or an empty optional if none are available
      */
-    public static Optional<ShareProvider> getMainProvider() {
-        return hasShareProvider() ? Optional.of(PROVIDERS.first()) : Optional.empty();
+    public static Optional<ShareProvider> getHighestPriorityProvider() {
+        return ShareProviderRegistryImpl.getHighestPriorityProvider();
+    }
+
+    /**
+     * Get the currently active share provider. The active share provider is either set in the schematic table
+     * by scrolling through tooltips or by executing the command <code>/schematic share provider [id]</code>.
+     * If an invalid or empty provider is set it will simply return the one with the highest priority.
+     *
+     * @return The active share provider if one exists or an empty optional if none are available
+     */
+    public static Optional<ShareProvider> getActiveShareProvider() {
+        return ShareProviderRegistryImpl.getActiveShareProvider();
+    }
+
+    public static Optional<ShareProvider> getShareProvider(ResourceLocation providerId) {
+        return ShareProviderRegistryImpl.getShareProvider(providerId);
+    }
+
+    public static Collection<ShareProvider> getAllProviders() {
+        return ShareProviderRegistryImpl.getAllProviders();
     }
 
     public static boolean hasShareProvider() {
-        return !PROVIDERS.isEmpty();
+        return ShareProviderRegistryImpl.hasShareProvider();
+    }
+
+    /**
+     * Alias for {@link ShareProviderRegistry#getHighestPriorityProvider()}. Renamed to make it more descriptive.
+     */
+    @Deprecated(since = "2.1", forRemoval = true)
+    public static Optional<ShareProvider> getMainProvider() {
+        return getHighestPriorityProvider();
     }
 }
