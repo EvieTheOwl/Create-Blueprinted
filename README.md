@@ -32,7 +32,7 @@ If you need more control over the output, you can use the built-in command:
 /schematic <export/share> <filename> [width] [orientation] [antialiasing]
 ```
 * **export** - Save image to a PNG file within the `./schematics` folder.
-* **share** - Share a schematic to a remote server (Functionality must be provided by an addon mod that uses Blueprints API).
+* **share** - Share a schematic to a remote server (Functionality must be provided by add-on mods that use Blueprints API).
 * **width** — Total output width in pixels (64–8192).
 * **orientation** — The yaw & pitch of the image. See: [Rotation - Minecraft Wiki](https://minecraft.wiki/w/Argument_types#rotation) for more info. The value `~ ~` will use your current viewing angle.  
 * **antialiasing** — Supersampling factor: `1` = off, `2`–`4` = progressively smoother edges (defaults to `2`).
@@ -83,14 +83,13 @@ public static void onExportOrShareImage(RenderSchematicImageEvent.Post e) {
 ### Share Providers
 Share providers hook into the `/schematic share` command and the share button within the Schematic Table. Blueprinted doesn't add a default share provider, instead this functionality is handled by other mods that implement Blueprints API.
 
-To provide an implementation inherit from [ShareProvider.java](./src/main/java/net/swzo/create_blueprinted/api/ShareProvider.java) and register it using [ShareProviderRegistry.register()](./src/main/java/net/swzo/create_blueprinted/api/ShareProviderRegistry.java). Please make sure to read the documentation because you will need to perform some kind of image sanitization if you want to send to a remote server.
+To provide an implementation inherit from [ShareProvider.java](./src/main/java/net/swzo/create_blueprinted/api/ShareProvider.java) and register it using [ShareProviderRegistry.register()](./src/main/java/net/swzo/create_blueprinted/api/ShareProviderRegistry.java) if you want it to show up in the schematic table. Please make sure to read the documentation because you will need to perform some kind of image sanitisation if you want to send to a remote server.
 
-Only 1 share provider can exist at any given time. The highest priority provider always takes precidence.
+Multiple share providers can exist at the same time and players can switch between them.
 
 ### Using the Schematic Renderer
 You can also use the `SchematicImageHandler` directly and provide hooks to this within your own mod. By default this accepts a schematic file name but you can also attach a list of structure blocks by using `attachToBlockList()`.
-
-
+If you're doing this it often makes sense to not register the `ShareProvider` and instead send it as an input into `SchematicImageHandler` constructor.
 
 ## License
 This project is licensed under MIT.
