@@ -89,7 +89,7 @@ Multiple share providers can exist at the same time and players can switch betwe
 
 ### Using the Schematic Renderer
 You can also use the `SchematicImageHandler` directly and provide hooks to this within your own mod. By default this accepts a schematic file name but you can also attach a list of structure blocks by using `attachToBlockList()`.
-If you're doing this it often makes sense to not register the `ShareProvider` and instead send it as an input into `SchematicImageHandler` constructor.
+For sharing schematics it often makes sense to not register a `ShareProvider` and instead send the object into the `SchematicImageHandler` constructor directly.
 
 ## License
 This project is licensed under MIT.
