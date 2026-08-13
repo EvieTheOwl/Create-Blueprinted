@@ -27,7 +27,7 @@ public class BeanProvider implements ShareProvider {
     }
 
     @Override
-    public @Nullable URL onRender(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings, byte[] imageByteArray) {
-        return null;
+    public boolean beforeBake(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings) {
+        return false;
     }
 }
