@@ -32,7 +32,7 @@ If you need more control over the output, you can use the built-in command:
 /schematic <export/share> <filename> [width] [orientation] [antialiasing]
 ```
 * **export** - Save image to a PNG file within the `./schematics` folder.
-* **share** - Share a schematic to a remote server (Functionality must be provided by add-on mods that use Blueprinted's API).
+* **share** - Share a schematic to a remote server (Functionality must be provided by add-on mods that use the `ShareProvider` API).
 * **width** — Total output width in pixels (64–8192).
 * **orientation** — The yaw & pitch of the image. See: [Rotation - Minecraft Wiki](https://minecraft.wiki/w/Argument_types#rotation) for more info. The value `~ ~` will use your current viewing angle.  
 * **antialiasing** — Supersampling factor: `1` = off, `2`–`4` = progressively smoother edges (defaults to `2`).
