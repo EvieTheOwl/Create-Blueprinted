@@ -9,15 +9,22 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * <p>A provider used whenever the share button or command is fired by the player.</p>
- * <p>If you want to provide an implementation that sends an image to a remote server you must
- *     implement some form of serverside image sanitization.</p>
+ * <p>Share providers are used as a common interface for schematic file & image sharing.
+ * Blueprinted supports multiple share providers so players can switch between them in-game.</p>
  *
- * Register the provider within {@link net.swzo.create_blueprinted.api.ShareProviderRegistry}
+ * <p>Share providers are registered within {@link net.swzo.create_blueprinted.api.ShareProviderRegistry}.
+ * You don't need to register a share provider, but it will allow users to see it in the schematic table GUI.
+ * It will also allow players to switch between providers.</p>
+ *
+ * <p>If you want to provide an implementation that sends an image to a remote server you must include
+ * some form of serverside image sanitization. Blueprinted won't tell the player where the file was sent.
+ * It is your responsibility to inform the player.</p>.
+ *
+ * <p>You can use the image renderer provided by Blueprinted (I recommend this) or implement your own.</p>
  */
 public interface ShareProvider {
 
-    int MAX_URL_CHAR_LENGTH = 50;
+    int MAX_URL_CHAR_LENGTH = 80;
 
     /**
      * Unique ID for the provider.
@@ -42,15 +49,32 @@ public interface ShareProvider {
     String destinationUrl();
 
     /**
-     * Determine what happens to the schematic image after it is rendered. Called on the main client thread.
+     * Called before the schematic is baked (Block data converted into a SchematicLevel).
+     *
+     * <p>If you want blueprinted to render the schematic return true. The result will be sent to
+     * {@link ShareProvider#onRender(ResourceLocation, String, SchematicRenderSettings, byte[])}.</p>
+     *
+     * <p>If you want to implement a custom renderer return false. Make sure to notify the player on
+     * where the file was sent</p>
+     *
+     * @param handlerId The image handlers ID (Default ID = create_blueprinted:default)
+     * @param schematicName Name of the schematic
+     * @param renderSettings Settings used to render the schematic
+     * @return False if a custom renderer should be used or true if the result should be handled by Blueprinted.
+     */
+    default boolean beforeBake(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings) { return true; }
+
+    /**
+     * Determine what happens to the schematic image after it's rendered by Blueprinted. Called on the main client thread.
      *
      * @param handlerId The image handlers ID (Default ID = create_blueprinted:default)
      * @param schematicName Name of the schematic
      * @param renderSettings Settings used to render the schematic
      * @param imageByteArray The rendered PNG schematic image in a byte array format
-     * @return A URL representing the location the image has been shared or null if the operation failed
+     * @return A URL representing the location the image has been shared or null if the operation failed.
+     *         You can also return null if you implemented your own custom renderer. In which case this method won't be called.
      */
-    @Nullable URL onRender(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings, byte[] imageByteArray);
+    default @Nullable URL onRender(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings, byte[] imageByteArray) { return null; }
 
     /**
      * <p>Fires if schematic image rendering fails. Called on the main client thread.</p>
@@ -75,8 +99,7 @@ public interface ShareProvider {
      * Additional information about the share provider. Displayed in the tooltip below the destination name and url.
      * Also shown before a file is shared using the <code>/schematic share</code> command.
      *
-     * @return Text components representing extra information tied to the share provider.
-     *         Each element represents a newline.
+     * @return Text components representing extra information tied to the share provider. Each element represents a newline.
      */
     default List<Component> extras() { return List.of(); }
 

@@ -63,6 +63,7 @@ public class SchematicImageHandler {
     private final SchematicRenderSettings.Builder settingsBuilder;
     private final SchematicLevel schematicLevel;
     private final ShareProvider shareProvider;
+    private String dataType = "image";
 
     private @Nullable Supplier<SchematicImageRenderer> renderSupplier;
 
@@ -71,11 +72,17 @@ public class SchematicImageHandler {
     }
 
     public SchematicImageHandler(ResourceLocation handlerId, String schematicName, CommandSourceStack source, SchematicRenderSettings.Builder settingsBuilder) {
+        this (handlerId, schematicName, source, settingsBuilder, ShareProviderRegistry.getActiveShareProvider().orElse(null));
+    }
+
+    public SchematicImageHandler(ResourceLocation handlerId, String schematicName, CommandSourceStack source, SchematicRenderSettings.Builder settingsBuilder, @Nullable ShareProvider shareProvider) {
         this.handlerId = handlerId;
         this.source = source;
         this.schematicName = schematicName;
         this.settingsBuilder = settingsBuilder;
-        this.shareProvider = ShareProviderRegistry.getActiveShareProvider().orElse(null);
+        this.shareProvider = shareProvider;
+        if (shareProvider != null && shareProvider.includeSchematicData())
+            this.dataType = "file";
 
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null)
@@ -104,6 +111,13 @@ public class SchematicImageHandler {
 
     public void share() {
         if (shareProvider == null) return;
+
+        boolean useBlueprintsRenderer = shareProvider.beforeBake(handlerId, schematicName, settingsBuilder.build());
+        if (!useBlueprintsRenderer) {
+            LOGGER.info("Sharing an image of the schematic {}. Share provider {} implements a custom renderer.",
+                    schematicName, shareProvider.id().toString());
+            return;
+        }
 
         Minecraft client = Minecraft.getInstance();
         renderAndDownsample(Action.SHARE)
@@ -150,10 +164,10 @@ public class SchematicImageHandler {
             URL url = shareProvider.onRender(handlerId, schematicName, settingsBuilder.build(), imageByteArray);
             if (url != null) {
                 ImageActionProgress.setState(ImageActionProgress.SHARED);
-                LOGGER.info("Schematic image {} sent to: {}", schematicName, url);
+                LOGGER.info("Schematic {} {} sent to: {}", dataType, schematicName, url);
             } else {
                 ImageActionProgress.setState(ImageActionProgress.SHARE_FAILED);
-                LOGGER.error("Failed to share schematic image {}", schematicName);
+                LOGGER.error("Failed to share schematic {} {}", dataType, schematicName);
             }
         });
     }
@@ -165,6 +179,7 @@ public class SchematicImageHandler {
         if (cause != null) {
             if (cause instanceof IOException) client.execute(() -> source.sendFailure(EXPORT_ERROR));
             ImageActionProgress.setState(ImageActionProgress.EXPORT_FAILED);
+
             LOGGER.error("Failed to export schematic image {}", schematicName, e);
             return;
         }

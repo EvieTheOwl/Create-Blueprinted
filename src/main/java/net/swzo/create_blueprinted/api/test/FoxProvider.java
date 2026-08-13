@@ -30,11 +30,6 @@ public class FoxProvider implements ShareProvider {
     }
 
     @Override
-    public @Nullable URL onRender(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings, byte[] imageByteArray) {
-        return null;
-    }
-
-    @Override
     public List<Component> extras() {
         return List.of(Component.literal("Foxes are cute and mysterious").withStyle(ChatFormatting.GOLD),
                 Component.empty(), Component.literal("beeeeeep!").withStyle(ChatFormatting.LIGHT_PURPLE));
