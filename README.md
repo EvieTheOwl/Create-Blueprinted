@@ -83,7 +83,7 @@ public static void onExportOrShareImage(RenderSchematicImageEvent.Post e) {
 ### Share Providers
 Share providers hook into the `/schematic share` command and the share button within the Schematic Table. Blueprinted doesn't add a default share provider, instead this functionality is handled by other mods that implement Blueprints API.
 
-To provide an implementation inherit from [ShareProvider.java](./src/main/java/net/swzo/create_blueprinted/api/ShareProvider.java) and register it using [ShareProviderRegistry.register()](./src/main/java/net/swzo/create_blueprinted/api/ShareProviderRegistry.java) if you want it to show up in the schematic table. Please make sure to read the documentation because you will need to perform some kind of image sanitisation if you want to send to a remote server.
+To provide an implementation inherit from [ShareProvider.java](./src/main/java/net/swzo/create_blueprinted/api/ShareProvider.java) and register it using [ShareProviderRegistry.register()](./src/main/java/net/swzo/create_blueprinted/api/ShareProviderRegistry.java) if you want it to show up in the schematic table GUI. Please make sure to read the documentation because you will need to perform some kind of image sanitisation if you want to send to a remote server.
 
 Multiple share providers can exist at the same time and players can switch between them.
 
