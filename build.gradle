@@ -108,4 +108,22 @@ idea {
     }
 }
 
+ext.brassworksMaven = [
+    artifactId: 'create-blueprinted',
+    pom: [
+        name: mod_name,
+        description: mod_description,
+        url: 'https://github.com/salem-5/Create-Blueprinted',
+        license: mod_license,
+        developerId: mod_authors,
+        scmUrl: 'https://github.com/salem-5/Create-Blueprinted',
+        scmConnection: 'scm:git:https://github.com/salem-5/Create-Blueprinted.git',
+    ],
+    pruneGroups: ['maven.modrinth'],
+]
+apply from: rootProject.file('gradle/brassworks-maven.gradle')
+publishing.publications.maven {
+    version = "${mod_version}+mc${minecraft_version}-${mod_loader}"
+}
+
 apply from: rootProject.file('publish.gradle')

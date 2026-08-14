@@ -41,12 +41,12 @@ If you need more control over the output, you can use the built-in command:
 To add Blueprinted as a dependency add the following to your `build.gradle` file:
 ```gradle
 repositories {
-    maven { url = "https://api.modrinth.com/maven" }
+    maven { url = "https://maven.opnsoc.org/releases" }
 }
 
 dependencies {
-    compileOnly "maven.modrinth:create-blueprinted:${blueprinted_version}+mc${minecraft_version}-neoforge"
-    localRuntime "maven.modrinth:create-blueprinted:${blueprinted_version}+mc${minecraft_version}-neoforge"
+    compileOnly "net.swzo:create-blueprinted:${blueprinted_version}+mc${minecraft_version}-neoforge"
+    localRuntime "net.swzo:create-blueprinted:${blueprinted_version}+mc${minecraft_version}-neoforge"
 }
 ```
 Make sure to define `blueprinted_version` and `minecraft_version` within the `gradle.properties` file.
