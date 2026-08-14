@@ -130,17 +130,22 @@ public class SchematicImageHandler {
         SchematicRenderSettings settings = settingsBuilder.build();
         int ssaa = settings.antialiasingFactor();
 
-        ImageActionProgress.start(schematicName);
+        if (shouldSendActionProgress(action)) ImageActionProgress.start(schematicName);
 
         Minecraft client = Minecraft.getInstance();
         return CompletableFuture.supplyAsync(() -> renderSupplier.get(), PIPELINE)
                 .thenCompose(renderer -> firePreRenderEvent(renderer, action, client))
-                .thenCompose(renderer -> onRenderThread(() -> renderer.render(settingsBuilder.build())))
+                .thenCompose(renderer -> onRenderThread(() -> render(renderer, action)))
                 .thenApplyAsync(image -> ssaa == 1 ? image : downsample(image, ssaa), PIPELINE)
                 .thenApply(this::convertToByteArray)
                 .thenCompose(imageByteArray -> firePostRenderEvent(imageByteArray, action, client))
                 .orTimeout(RENDER_TIMEOUT_SECS, TimeUnit.SECONDS)
                 .handle((imageByteArray, e) -> handleRenderExceptions(imageByteArray, e, action, client));
+    }
+
+    private NativeImage render(SchematicImageRenderer renderer, Action action) {
+        if (shouldSendActionProgress(action)) ImageActionProgress.setState(ImageActionProgress.RENDERING);
+        return renderer.render(settingsBuilder.build());
     }
 
     private File processExport(byte[] imageByteArray, Minecraft client) {
@@ -158,15 +163,17 @@ public class SchematicImageHandler {
 
     private void onShareFinish(@Nullable byte[] imageByteArray, Minecraft client) {
         if (imageByteArray == null) return;
-        ImageActionProgress.setState(ImageActionProgress.SHARING);
+
+        boolean sendActionProgress = shouldSendActionProgress(Action.SHARE);
+        if (sendActionProgress) ImageActionProgress.setState(ImageActionProgress.SHARING);
 
         client.execute(() -> {
             URL url = shareProvider.onRender(handlerId, schematicName, settingsBuilder.build(), imageByteArray);
             if (url != null) {
-                ImageActionProgress.setState(ImageActionProgress.SHARED);
+                if (sendActionProgress) ImageActionProgress.setState(ImageActionProgress.SHARED);
                 LOGGER.info("Schematic {} {} sent to: {}", dataType, schematicName, url);
             } else {
-                ImageActionProgress.setState(ImageActionProgress.SHARE_FAILED);
+                if (sendActionProgress) ImageActionProgress.setState(ImageActionProgress.SHARE_FAILED);
                 LOGGER.error("Failed to share schematic {} {}", dataType, schematicName);
             }
         });
@@ -236,7 +243,7 @@ public class SchematicImageHandler {
             ImageActionProgress.cancel();
             return null;
         }
-        ImageActionProgress.setState(ImageActionProgress.RENDER_FAILED);
+        if (shouldSendActionProgress(action)) ImageActionProgress.setState(ImageActionProgress.RENDER_FAILED);
         client.execute(() -> {
             MutableComponent renderError = RENDER_ERROR.copy().append(" ");
 
@@ -254,6 +261,10 @@ public class SchematicImageHandler {
         });
         CreateBlueprinted.LOGGER.error("Failed to render schematic", e);
         return null;
+    }
+
+    private boolean shouldSendActionProgress(Action action) {
+        return action == Action.EXPORT || shareProvider == null || !shareProvider.silenceMessages();
     }
 
     private static Throwable getExceptionCause(@Nullable Throwable e) {

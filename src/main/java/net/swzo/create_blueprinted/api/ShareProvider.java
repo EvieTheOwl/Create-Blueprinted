@@ -111,10 +111,15 @@ public interface ShareProvider {
     default boolean hideTooltipHints() { return false; }
 
     /**
-     * Whether schematic data is also sent. This could include data about block types and positions,
-     * block entity data, etc...
+     * Is schematic data sent alongside a schematic image. This could include data about block types and
+     * positions, block entity data, etc...
      */
     default boolean includeSchematicData() { return false; }
+
+    /**
+     * Defines if status messages sent to the player should be silenced.
+     */
+    default boolean silenceMessages() { return false; }
 
     /**
      * Gets the priority of the current provider. The highest priority provider is shown to the user
