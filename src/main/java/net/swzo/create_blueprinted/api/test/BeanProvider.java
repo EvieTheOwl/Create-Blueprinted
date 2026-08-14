@@ -28,6 +28,11 @@ public class BeanProvider implements ShareProvider {
 
     @Override
     public boolean beforeBake(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings) {
-        return false;
+        return true;
+    }
+
+    @Override
+    public boolean silenceMessages() {
+        return true;
     }
 }

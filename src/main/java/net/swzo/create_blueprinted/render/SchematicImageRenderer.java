@@ -101,8 +101,6 @@ public final class SchematicImageRenderer {
         RenderSystem.assertOnRenderThread();
         BoundingBox bounds = schematicLevel.getBounds();
 
-        ImageActionProgress.setState(ImageActionProgress.RENDERING);
-
         float minX = bounds.minX(), minY = bounds.minY(), minZ = bounds.minZ();
         float maxX = bounds.maxX() + 1f, maxY = bounds.maxY() + 1f, maxZ = bounds.maxZ() + 1f;
         float centerX = (minX + maxX) / 2f, centreY = (minY + maxY) / 2f, centreZ = (minZ + maxZ) / 2f;
