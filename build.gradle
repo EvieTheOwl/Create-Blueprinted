@@ -119,7 +119,7 @@ ext.brassworksMaven = [
         scmUrl: 'https://github.com/salem-5/Create-Blueprinted',
         scmConnection: 'scm:git:https://github.com/salem-5/Create-Blueprinted.git',
     ],
-    pruneGroups: ['maven.modrinth'],
+    pruneGroups: ['maven.modrinth', 'mezz.jei'],
 ]
 apply from: rootProject.file('gradle/brassworks-maven.gradle')
 publishing.publications.maven {
