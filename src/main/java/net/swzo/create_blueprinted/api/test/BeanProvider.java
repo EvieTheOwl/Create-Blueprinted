@@ -33,6 +33,6 @@ public class BeanProvider implements ShareProvider {
 
     @Override
     public boolean silenceMessages() {
-        return true;
+        return false;
     }
 }
