@@ -49,7 +49,8 @@ public class SchematicImageHandler {
     private static final Component EMPTY_IMAGE_BAKE = translatableError("schematic_render.empty_image_bake");
     private static final Component CONVERT_AND_VALIDATE_FAILED = translatableError("schematic_render.convert_and_validate_failed");
     private static final Component TIMED_OUT = translatableError("schematic_render.timed_out", RENDER_TIMEOUT_SECS);
-    private static final Component CLICK_TO_OPEN = translatable("command.renderschem.click_to_open");
+    private static final Component CLICK_TO_OPEN_EXPORT = translatable("command.renderschem.click_to_open");
+    private static final Component CLICK_TO_OPEN_SHARE = translatable("command.shareschem.click_to_open");
 
     public static final ExecutorService PIPELINE = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "create-blueprinted-image-handler");
@@ -118,10 +119,9 @@ public class SchematicImageHandler {
                     schematicName, shareProvider.id().toString());
             return;
         }
-
         Minecraft client = Minecraft.getInstance();
         renderAndDownsample(Action.SHARE)
-                .whenComplete((imageByteArray, __) -> onShareFinish(imageByteArray, client));
+                .whenCompleteAsync((imageByteArray, __) -> onShareFinish(imageByteArray, client), PIPELINE);
     }
 
     private CompletableFuture<byte[]> renderAndDownsample(Action action) {
@@ -167,16 +167,43 @@ public class SchematicImageHandler {
         boolean sendActionProgress = shouldSendActionProgress(Action.SHARE);
         if (sendActionProgress) ImageActionProgress.setState(ImageActionProgress.SHARING);
 
-        client.execute(() -> {
-            URL url = shareProvider.onRender(handlerId, schematicName, settingsBuilder.build(), imageByteArray);
+        Future<URL> shareUrlFuture = shareProvider.onRender(handlerId, schematicName, settingsBuilder.build(), imageByteArray);
+        Throwable shareError = null;
+        String shareErrorMessage = null;
+
+        try {
+            URL url = shareUrlFuture.get(shareProvider.timeout(), TimeUnit.SECONDS);
             if (url != null) {
-                if (sendActionProgress) ImageActionProgress.setState(ImageActionProgress.SHARED);
+                if (sendActionProgress) client.execute(() -> {
+                    ImageActionProgress.setState(ImageActionProgress.SHARED);
+                    String urlString = url.toString();
+                    Component finalMessage = translatable("command.shareschem.success")
+                            .withColor(UIHelpers.LIGHT_GREEN_TEXT_COLOR)
+                            .append(Component.literal(urlString)
+                                    .withStyle(Style.EMPTY
+                                            .withColor(UIHelpers.DARK_GREEN_TEXT_COLOR)
+                                            .withUnderlined(true)
+                                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString))
+                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CLICK_TO_OPEN_SHARE))));
+                    source.sendSuccess(() -> finalMessage, false);
+                });
                 LOGGER.info("Schematic {} {} sent to: {}", dataType, schematicName, url);
-            } else {
-                if (sendActionProgress) ImageActionProgress.setState(ImageActionProgress.SHARE_FAILED);
-                LOGGER.error("Failed to share schematic {} {}", dataType, schematicName);
-            }
-        });
+            } else
+                shareErrorMessage = "";
+        } catch (InterruptedException | ExecutionException e) {
+            shareErrorMessage = "Task was either interrupted or failed to execute.";
+            shareError = e;
+        } catch (TimeoutException e) {
+            shareErrorMessage = "Operation timed out after " + shareProvider.timeout()  + " seconds.";
+        }
+
+        if (shareErrorMessage != null) {
+            if (sendActionProgress) client.execute(() -> ImageActionProgress.setState(ImageActionProgress.SHARE_FAILED));
+            if (shareError != null)
+                LOGGER.error("Failed to share schematic {} {}. {}", dataType, schematicName, shareErrorMessage, shareError);
+            else
+                LOGGER.error("Failed to share schematic {} {}. {}", dataType, schematicName, shareErrorMessage);
+        }
     }
 
     private void onExportFinish(@Nullable File outputFile, @Nullable Throwable e, Minecraft client) {
@@ -198,7 +225,7 @@ public class SchematicImageHandler {
                                     .withColor(UIHelpers.DARK_BLUE_TEXT_COLOR)
                                     .withUnderlined(true)
                                     .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, outputFile.getAbsolutePath()))
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CLICK_TO_OPEN))));
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CLICK_TO_OPEN_EXPORT))));
             source.sendSuccess(() -> finalMessage, false);
         });
         ImageActionProgress.setState(ImageActionProgress.EXPORTED);

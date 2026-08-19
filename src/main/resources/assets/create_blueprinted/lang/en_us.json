@@ -24,6 +24,8 @@
   "create_blueprinted.command.renderschem.click_to_open": "Click to open image",
   "create_blueprinted.command.renderschem.timeout": "Error: Schematic rendering timed out after 1 minute.",
   "create_blueprinted.command.renderschem.error": "Error: %s",
+  "create_blueprinted.command.shareschem.success": "Successfully shared schematic to ",
+  "create_blueprinted.command.shareschem.click_to_open": "Click to open in browser",
   "create_blueprinted.command.shareschem.queued_image": "Schematic image will be sent to: ",
   "create_blueprinted.command.shareschem.queued_schematic": "Schematic file will be sent to: ",
   "create_blueprinted.command.shareschem.queued_image_plural": "Schematic images will now be sent to: ",
