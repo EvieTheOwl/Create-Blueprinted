@@ -46,7 +46,6 @@ public class ShareButton extends SmallIconButton {
     }
 
     @Override
-
     public void doRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.toolTip.clear();
         this.toolTip.add(BUTTON_TITLE);
