@@ -51,6 +51,11 @@ dependencies {
 ```
 Make sure to define `blueprinted_version` and `minecraft_version` within the `gradle.properties` file.
 
+### Share Providers
+Share providers are used as a common interface for schematic file & image sharing. Blueprinted supports multiple share providers so players can switch between them in-game.
+
+To provide an implementation inherit from [ShareProvider.java](./src/main/java/net/swzo/create_blueprinted/api/ShareProvider.java) and register it using [ShareProviderRegistry.register()](./src/main/java/net/swzo/create_blueprinted/api/ShareProviderRegistry.java) if you want it to show up in the schematic table GUI. Please make sure to read the documentation because you will need to perform some kind of image sanitisation if you want to send to a remote server.
+
 ### Events
 A couple events are provided which you can utilize in your mod:
 - `RenderSchematicEvent.Pre` - Fired before a schematic is rendered. Includes the `SchematicLevel` which represents the content that is about to be rendered. 
@@ -79,13 +84,6 @@ public static void onExportOrShareImage(RenderSchematicImageEvent.Post e) {
     if (isSharing) shareImageToBob(e.getFileName(), e.getImageContent());
 }
 ```
-
-### Share Providers
-Share providers hook into the `/schematic share` command and the share button within the Schematic Table. Blueprinted doesn't add a default share provider, instead this functionality is handled by other mods that implement Blueprints API.
-
-To provide an implementation inherit from [ShareProvider.java](./src/main/java/net/swzo/create_blueprinted/api/ShareProvider.java) and register it using [ShareProviderRegistry.register()](./src/main/java/net/swzo/create_blueprinted/api/ShareProviderRegistry.java) if you want it to show up in the schematic table GUI. Please make sure to read the documentation because you will need to perform some kind of image sanitisation if you want to send to a remote server.
-
-Multiple share providers can exist at the same time and players can switch between them.
 
 ### Using the Schematic Renderer
 You can also use the `SchematicImageHandler` directly and provide hooks to this within your own mod. By default this accepts a schematic file name but you can also attach a list of structure blocks by using `attachToBlockList()`.
