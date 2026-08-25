@@ -67,7 +67,7 @@ public interface ShareProvider {
     default boolean beforeBake(ResourceLocation handlerId, String schematicName, SchematicRenderSettings renderSettings) { return true; }
 
     /**
-     * Determine what happens to the schematic image after it's rendered by Blueprinted. Called on the main client thread.
+     * Determine what happens to the schematic image after it's rendered by Blueprinted. Called on an async thread.
      *
      * @param handlerId The image handlers ID (Default ID = create_blueprinted:default)
      * @param schematicName Name of the schematic

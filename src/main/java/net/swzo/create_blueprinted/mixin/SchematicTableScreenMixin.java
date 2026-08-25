@@ -50,10 +50,10 @@ public abstract class SchematicTableScreenMixin extends AbstractSimiContainerScr
 
     @Shadow private ScrollInput schematicsArea;
 
-    @Shadow private Label schematicsLabel;
-    @Shadow private IconButton refreshButton;
     @SuppressWarnings("FieldCanBeLocal")
     @Unique private IconButton cb$exportButton, cb$shareButton;
+    @Shadow private Label schematicsLabel;
+    @Shadow private IconButton refreshButton;
 
     @Unique private boolean cb$shiftWasDownOnInit, cb$ctrlWasDownOnInit;
 

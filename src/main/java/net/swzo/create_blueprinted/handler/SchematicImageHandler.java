@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.PngInfo;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.neoforged.neoforge.common.NeoForge;
 import net.swzo.create_blueprinted.CreateBlueprinted;
@@ -98,6 +99,12 @@ public class SchematicImageHandler {
                 .orElseThrow(() -> new EmptyImageBakeException("Structure template is empty."));
     }
 
+    public void attachToBlueprint(ItemStack blueprint) {
+        StructureTemplate template = SchematicUtils.loadTemplateFromBlueprint(blueprint);
+        this.renderSupplier = () -> SchematicImageRenderer.bakeFromTemplate(template, schematicLevel)
+                .orElseThrow(() -> new EmptyImageBakeException("Structure template is empty."));
+    }
+
     public void attachToBlockList(Map<BlockPos, StructureTemplate.StructureBlockInfo> blocks) {
         renderSupplier = () -> SchematicImageRenderer.bakeFromBlocks(blocks, schematicLevel)
                 .orElseThrow(() -> new EmptyImageBakeException("List of structure template blocks is empty."));
@@ -169,7 +176,7 @@ public class SchematicImageHandler {
 
         Future<URL> shareUrlFuture = shareProvider.onRender(handlerId, schematicName, settingsBuilder.build(), imageByteArray);
         Throwable shareError = null;
-        String shareErrorMessage = null;
+        String errorLogMessage = null;
 
         try {
             URL url = shareUrlFuture.get(shareProvider.timeout(), TimeUnit.SECONDS);
@@ -187,22 +194,24 @@ public class SchematicImageHandler {
                                             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CLICK_TO_OPEN_SHARE))));
                     source.sendSuccess(() -> finalMessage, false);
                 });
-                LOGGER.info("Schematic {} {} sent to: {}", dataType, schematicName, url);
+                LOGGER.info("Schematic {} {} sent to: {}. {}", dataType, schematicName, url, getHandlerContext(handlerId));
             } else
-                shareErrorMessage = "";
+                errorLogMessage = "";
         } catch (InterruptedException | ExecutionException e) {
-            shareErrorMessage = "Task was either interrupted or failed to execute.";
+            errorLogMessage = "Task was either interrupted or failed to execute.";
             shareError = e;
         } catch (TimeoutException e) {
-            shareErrorMessage = "Operation timed out after " + shareProvider.timeout()  + " seconds.";
+            errorLogMessage = "Operation timed out after " + shareProvider.timeout()  + " seconds.";
         }
 
-        if (shareErrorMessage != null) {
+        if (errorLogMessage != null) {
             if (sendActionProgress) client.execute(() -> ImageActionProgress.setState(ImageActionProgress.SHARE_FAILED));
             if (shareError != null)
-                LOGGER.error("Failed to share schematic {} {}. {}", dataType, schematicName, shareErrorMessage, shareError);
+                LOGGER.error("Failed to share schematic {} {}. {} {}", dataType, schematicName, errorLogMessage,
+                        getHandlerContext(handlerId), shareError);
             else
-                LOGGER.error("Failed to share schematic {} {}. {}", dataType, schematicName, shareErrorMessage);
+                LOGGER.error("Failed to share schematic {} {}. {} {}", dataType, schematicName, errorLogMessage,
+                        getHandlerContext(handlerId));
         }
     }
 
@@ -213,8 +222,7 @@ public class SchematicImageHandler {
         if (cause != null) {
             if (cause instanceof IOException) client.execute(() -> source.sendFailure(EXPORT_ERROR));
             ImageActionProgress.setState(ImageActionProgress.EXPORT_FAILED);
-
-            LOGGER.error("Failed to export schematic image {}", schematicName, e);
+            LOGGER.error("Failed to export schematic image {}. {}", schematicName, getHandlerContext(handlerId), e);
             return;
         }
         client.execute(() -> {
@@ -274,6 +282,7 @@ public class SchematicImageHandler {
         client.execute(() -> {
             MutableComponent renderError = RENDER_ERROR.copy().append(" ");
 
+            //noinspection IfCanBeSwitch
             if (cause instanceof EmptyImageBakeException)
                 source.sendFailure(renderError.append(EMPTY_IMAGE_BAKE));
             else if (cause instanceof SchematicImageRenderException)
@@ -286,8 +295,12 @@ public class SchematicImageHandler {
             if (action == Action.SHARE)
                 shareProvider.onRenderFailure(handlerId, schematicName, settingsBuilder.build(), cause, renderError);
         });
-        CreateBlueprinted.LOGGER.error("Failed to render schematic", e);
+        CreateBlueprinted.LOGGER.error("Failed to render schematic {}. {}", schematicName, getHandlerContext(handlerId), e);
         return null;
+    }
+
+    private String getHandlerContext(ResourceLocation handlerId) {
+        return "(handler: " + handlerId.toString() + ", share provider: " + (shareProvider != null ? shareProvider.id().toString() : "N/A") + ").";
     }
 
     private boolean shouldSendActionProgress(Action action) {

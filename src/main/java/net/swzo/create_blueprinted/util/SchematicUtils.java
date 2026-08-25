@@ -27,6 +27,14 @@ public class SchematicUtils {
         return SchematicItem.loadSchematic(client.level, blueprint);
     }
 
+    public static StructureTemplate loadTemplateFromBlueprint(ItemStack blueprint) {
+        if (!(blueprint.getItem() instanceof SchematicItem))
+            throw new RuntimeException("Schematics must be loaded from Blueprint items. " +
+                    "Item provided: " + blueprint.getItem());
+
+        return SchematicItem.loadSchematic(Minecraft.getInstance().level, blueprint);
+    }
+
     public static Stream<String> getAllSchematicNames() {
         return CreateClient.SCHEMATIC_SENDER.getAvailableSchematics().stream().map(Component::getString);
     }

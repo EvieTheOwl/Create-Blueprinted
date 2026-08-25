@@ -18,12 +18,8 @@
   "create_blueprinted.gui.schematic_table.share_button.override_url": "Destination: %s",
   "create_blueprinted.gui.schematic_table.share_button.click_hint": "(Right-click to switch share providers)",
 
-  "create_blueprinted.command.renderschem.not_found": "Error: Schematic '%s.nbt' not found.",
-  "create_blueprinted.command.renderschem.starting": "Starting background render for '%s'...",
   "create_blueprinted.command.renderschem.success": "Successfully rendered schematic to ",
   "create_blueprinted.command.renderschem.click_to_open": "Click to open image",
-  "create_blueprinted.command.renderschem.timeout": "Error: Schematic rendering timed out after 1 minute.",
-  "create_blueprinted.command.renderschem.error": "Error: %s",
   "create_blueprinted.command.shareschem.success": "Successfully shared schematic to ",
   "create_blueprinted.command.shareschem.click_to_open": "Click to open in browser",
   "create_blueprinted.command.shareschem.queued_image": "Schematic image will be sent to: ",
